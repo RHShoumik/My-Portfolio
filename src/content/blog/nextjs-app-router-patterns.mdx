@@ -1,0 +1,69 @@
+---
+title: "Next.js App Router: Patterns That Scale"
+description: "Practical patterns and best practices for building production-grade applications with Next.js App Router."
+date: "2026-01-20"
+tags: ["nextjs", "react", "app-router", "architecture"]
+published: true
+---
+
+# Next.js App Router: Patterns That Scale
+
+The App Router in Next.js represents a paradigm shift in how we think about React applications. After building several production apps with it, here are the patterns I rely on.
+
+## Route Group Organization
+
+Route groups `(folder)` let you organize code without affecting URLs:
+
+```
+app/
+  (marketing)/
+    page.tsx          → /
+    about/page.tsx    → /about
+  (dashboard)/
+    layout.tsx        → shared dashboard layout
+    settings/page.tsx → /settings
+```
+
+## Server Components by Default
+
+The mental model shift: **everything is a server component unless you explicitly opt in** with `"use client"`. This means:
+
+- Data fetching happens on the server
+- Bundle size stays small
+- Interactivity is intentionally scoped
+
+```tsx
+// This component runs on the server — no client-side JS
+async function PostList() {
+  const posts = await db.post.findMany();
+  return (
+    <ul>
+      {posts.map(post => (
+        <li key={post.id}>{post.title}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+## Streaming with Suspense
+
+Wrap slow data fetches in Suspense boundaries for instant page loads:
+
+```tsx
+export default function Page() {
+  return (
+    <main>
+      <h1>Dashboard</h1>
+      <Suspense fallback={<MetricsSkeleton />}>
+        <Metrics />
+      </Suspense>
+      <Suspense fallback={<ChartSkeleton />}>
+        <RevenueChart />
+      </Suspense>
+    </main>
+  );
+}
+```
+
+These are just the patterns I've found most valuable. The App Router is still evolving, and the ecosystem around it is maturing rapidly.
