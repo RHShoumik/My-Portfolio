@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const CHARS = ["R", "H", "S"];
-
 const ease = [0.76, 0, 0.24, 1] as const;
 
 export function PageLoader() {
@@ -19,6 +17,9 @@ export function PageLoader() {
     }
     setVisible(true);
 
+    const minVisible = 5000; // minimum visible time in ms
+    const start = Date.now();
+
     let p = 0;
     const tick = setInterval(() => {
       // non-linear eased fill — speeds up after 60%
@@ -28,10 +29,13 @@ export function PageLoader() {
 
       if (p >= 100) {
         clearInterval(tick);
+        const elapsed = Date.now() - start;
+        const wait = Math.max(0, minVisible - elapsed);
+        // keep loader visible for at least `minVisible`, then allow a short delay
         setTimeout(() => {
           setDone(true);
-          sessionStorage.setItem("rhshoumik", "1");
-        }, 450);
+          sessionStorage.setItem("rhs_loaded", "1");
+        }, wait + 250);
       }
     }, 18);
 
@@ -69,21 +73,17 @@ export function PageLoader() {
             exit={{ opacity: 0, scale: 0.96 }}
             transition={{ duration: 0.3, ease: "easeIn" }}
           >
-            {/* Initials */}
-            <div className="flex items-end gap-[0.12em]">
-              {CHARS.map((char, i) => (
-                <div key={char} className="overflow-hidden">
-                  <motion.span
-                    className="block font-bold leading-none text-white"
-                    style={{ fontSize: "clamp(4rem, 14vw, 8rem)", letterSpacing: "-0.04em" }}
-                    initial={{ y: "110%" }}
-                    animate={{ y: 0 }}
-                    transition={{ duration: 0.7, ease, delay: 0.15 + i * 0.1 }}
-                  >
-                    {char}
-                  </motion.span>
-                </div>
-              ))}
+            {/* Loader GIF */}
+            <div className="flex items-center bg-gray-200 rounded-lg p-4">
+              <motion.img
+                src="/images/LoaderImageTransparentBG.gif"
+                alt="Loader"
+                className="block"
+                style={{ width: "clamp(6rem, 14vw, 12rem)" }}
+                // initial={{ y: "110%" }}
+                // animate={{ y: 0 }}
+                transition={{ duration: 0.7, ease, delay: 0.15 }}
+              />
             </div>
 
             {/* Subtitle */}
