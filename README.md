@@ -1,36 +1,148 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ragib Hassan Shoumik — Portfolio
+
+Personal portfolio website built with **Next.js 16**, **TypeScript**, and **Tailwind CSS v4**. Features a blog powered by MDX, animated UI with Framer Motion, dynamic color palettes, and a contact API.
+
+🌐 **Live:** [rhshoumik.dev](https://rhshoumik.dev)
+
+---
+
+## Tech Stack
+
+| Layer | Libraries / Tools |
+|---|---|
+| Framework | Next.js 16 (App Router) |
+| Language | TypeScript 5 |
+| Styling | Tailwind CSS v4, ShadCN UI |
+| Animation | Framer Motion 12 |
+| Blog | MDX, `@next/mdx`, `remark-gfm`, `rehype-pretty-code` |
+| State | Zustand 5 |
+| Theming | `next-themes` |
+| Icons | Lucide React |
+| Syntax highlighting | Shiki |
+| Linting | ESLint 9 |
+| Deployment | Vercel |
+
+---
+
+## Features
+
+- **Multi-palette theming** — 6 color palettes (Slate, Emerald, Indigo, Rose, Amber, Cyan) with dark/light mode
+- **MDX blog** — file-based blog with frontmatter, GFM tables, and syntax-highlighted code blocks
+- **Animated sections** — scroll-triggered animations via Framer Motion with a custom cursor
+- **GitHub contribution graph** — live activity grid
+- **Scroll progress indicator**
+- **OpenGraph image API** — dynamic OG images at `/api/og`
+- **Contact form API** — serverless contact route at `/api/contact`
+- **SEO** — `sitemap.ts`, `robots.ts`, and per-page metadata
+- **View Transitions API** — experimental Next.js view transitions
+- **React Compiler** — enabled for optimized re-renders
+
+---
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── page.tsx              # Home page (all sections)
+│   ├── layout.tsx            # Root layout with providers
+│   ├── globals.css           # Global styles + palette CSS vars
+│   ├── robots.ts             # robots.txt
+│   ├── sitemap.ts            # XML sitemap
+│   ├── blog/
+│   │   ├── page.tsx          # Blog listing
+│   │   └── [slug]/page.tsx   # Blog post
+│   └── api/
+│       ├── contact/route.ts  # Contact form endpoint
+│       └── og/route.tsx      # Dynamic OG image
+├── components/
+│   ├── sections/             # Hero, About, Experience, Projects, Skills, Contact
+│   ├── ui/                   # ShadCN primitives
+│   ├── navbar.tsx
+│   ├── footer.tsx
+│   ├── theme-switcher.tsx
+│   ├── palette-sync.tsx
+│   ├── custom-cursor.tsx
+│   ├── scroll-progress.tsx
+│   ├── github-graph.tsx
+│   └── motion.tsx            # Reusable motion wrappers
+├── content/
+│   └── blog/                 # MDX blog posts
+├── lib/
+│   ├── constants.ts          # Site config, nav, experience, projects, skills
+│   ├── blog.ts               # MDX parsing helpers
+│   └── utils.ts              # cn() and other utilities
+└── store/
+    └── theme-store.ts        # Zustand palette store
+```
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- npm / yarn / pnpm
+
+### Install
+
+```bash
+git clone https://github.com/rhshoumik/portfolio.git
+cd portfolio
+npm install
+```
+
+### Run locally
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Starts on http://localhost:3001
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Build for production
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+npm start
+# Serves on http://localhost:3001
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## Writing Blog Posts
 
-To learn more about Next.js, take a look at the following resources:
+Add a `.mdx` file to `src/content/blog/` with the following frontmatter:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```mdx
+---
+title: "Your Post Title"
+date: "2026-02-24"
+description: "A short description for the listing page."
+tags: ["Next.js", "TypeScript"]
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Your content here...
+```
 
-## Deploy on Vercel
+The post will be available at `/blog/your-post-title` (slug derived from the filename).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Environment Variables
+
+Create a `.env.local` file in the project root:
+
+```env
+# Required for the contact form (e.g. Resend, Nodemailer, etc.)
+CONTACT_EMAIL=you@example.com
+
+# Optional — public site URL (used for OG image generation)
+NEXT_PUBLIC_SITE_URL=https://rhshoumik.dev
+```
+
+---
+
+## License
+
+MIT — feel free to use this as inspiration for your own portfolio, but please swap out personal content (name, experience, projects) with your own.

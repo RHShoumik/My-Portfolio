@@ -8,6 +8,7 @@ import { CustomCursor } from "@/components/custom-cursor";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { siteConfig } from "@/lib/constants";
 import "./globals.css";
+import { PageLoader } from "@/components/page-loader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -93,6 +94,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
+        <PageLoader />
           <ScrollProgress />
           <CustomCursor />
           <Navbar />
