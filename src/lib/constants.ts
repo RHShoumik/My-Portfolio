@@ -48,8 +48,8 @@ export const experiences = [
     role: "Front-End Engineer",
     period: "April 2024 — Present",
     description:
-      "Leading frontend architecture for enterprise-grade travel tech platforms. Building performant, SEO-optimized Next.js applications with complex booking flows, real-time data, and Stripe integration.",
-    tech: ["Next.js", "TypeScript", "Tailwind CSS", "React Query", "Stripe"],
+      "Contributed as a Front-End Engineer to JustGo Technologies Limited — a complete membership management system for clubs and national governing bodies (NGBs). Built frontend architecture and user interfaces for administrative automation, streamlined membership journeys, smart business rules, complex booking flows, real-time data views, and Stripe payment integrations, with a focus on performance and SEO.",
+    tech: ["React.js", "TypeScript", "Tailwind CSS", "React Query", "Stripe"],
   },
   {
     company: "6amTech",

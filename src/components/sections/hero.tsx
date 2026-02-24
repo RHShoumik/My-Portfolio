@@ -84,7 +84,7 @@ export function HeroSection() {
           {/* Title */}
           <FadeUp delay={0.4}>
             <p className="mb-3 font-mono text-sm text-primary md:text-base">
-              Frontend Engineer &bull; React & Next.js Specialist
+              Frontend Engineer
             </p>
           </FadeUp>
 
@@ -137,7 +137,7 @@ export function HeroSection() {
 
             <div className="relative overflow-hidden rounded-2xl border-2 border-border/40 shadow-2xl">
               <Image
-                src="/images/hero-photo.jpeg"
+                src="/images/hero-photo.jpg"
                 alt="Ragib Hassan Shoumik"
                 width={480}
                 height={600}

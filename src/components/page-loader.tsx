@@ -30,7 +30,7 @@ export function PageLoader() {
         clearInterval(tick);
         setTimeout(() => {
           setDone(true);
-          sessionStorage.setItem("rhs_loaded", "1");
+          sessionStorage.setItem("rhshoumik", "1");
         }, 450);
       }
     }, 18);
