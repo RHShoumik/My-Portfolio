@@ -1,0 +1,108 @@
+---
+title: "Your Destination — A Short Catchy Title"
+date: "2026-03-15"
+description: "A one-sentence summary that appears on the travel listing page."
+country: "Bangladesh"
+distance: 250
+cover: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=800&fit=crop"
+published: false
+---
+
+{/* ================================================================
+    HOW TO ADD A NEW TRAVEL STORY
+    ================================================================
+
+    STEP 1: Create the MDX file
+    ────────────────────────────
+    Copy this template to:  src/content/travel/your-slug-here.mdx
+    The filename becomes the URL slug:
+      your-slug-here.mdx  →  /travel/your-slug-here
+
+    STEP 2: Fill in the frontmatter above
+    ──────────────────────────────────────
+    - title:       Display title on the page
+    - date:        "YYYY-MM-DD" format (determines sort order)
+    - description: Short summary for cards & SEO
+    - country:     Country name (shown in stats)
+    - distance:    Distance from Dhaka in km (shown in the card)
+    - cover:       Cover image URL (1200×800 recommended, Unsplash works great)
+    - published:   Set to true when ready (false = hidden from listing)
+
+    STEP 3: Add a matching entry in travel-data.ts
+    ────────────────────────────────────────────────
+    Open: src/data/travel-data.ts
+    Add to the travelLocations array:
+
+    {
+      slug: "your-slug-here",              // MUST match filename
+      city: "City Name",
+      country: "Country",
+      coordinates: [LONGITUDE, LATITUDE],   // [lng, lat] — see below
+      coverImage: "https://...",            // same as frontmatter cover
+      description: "Short description.",
+      date: "2026-03-15",                   // same as frontmatter date
+      distance: 250,                        // km from Dhaka
+    },
+
+    HOW TO FIND LAT/LNG:
+    1. Go to Google Maps → right-click on the exact location → Copy coordinates
+    2. Google gives: "23.382, 92.293" → that's [latitude, longitude]
+    3. In travel-data.ts, coordinates are [LONGITUDE, LATITUDE] → [92.293, 23.382]
+    4. Or use: https://www.latlong.net/
+
+    STEP 4: Set published to true
+    ─────────────────────────────
+    Change "published: false" to "published: true" in the frontmatter.
+
+    That's it! The location will appear on the 3D globe, in the
+    tour auto-cycle, on the travel stories slider, and as a blog card.
+    ================================================================ */}
+
+## The Journey
+
+Write about how you got there. What was the road like? What did you feel on the way?
+
+The journey to **[Destination]** began with a sense of anticipation. The road wound through [describe the terrain — hills, valleys, coastal highways, busy streets]. After [X hours] from Dhaka, the landscape transformed into something entirely different.
+
+> Insert a memorable quote or thought from the journey here.
+
+## First Impressions
+
+Describe the moment you arrived. What hit you first — the air, the views, the sounds, the people?
+
+The first thing I noticed was [describe a sensory detail]. This place didn't feel like [comparison] — it felt like [something unique].
+
+## The Heart of the Trip
+
+This is the main section. What did you do? What did you discover? What surprised you?
+
+We spent the morning [activity]. The afternoon was reserved for [activity]. But the real discovery came when we [unexpected moment].
+
+### A Local Encounter
+
+If there was a memorable interaction with locals, food, or culture, share it:
+
+A local [person/guide/shopkeeper] showed us [something]. They said something that stuck with me: *"[quote]"*.
+
+## What I Learned
+
+Every trip teaches something. What was the takeaway from this one?
+
+As someone who spends most days in front of a screen writing code, this trip reminded me that [insight]. The best experiences aren't optimized — they're simply *lived*.
+
+## Practical Notes
+
+For anyone planning this trip:
+
+- **Getting there:** [How to reach from Dhaka — bus, train, flight, jeep]
+- **Best season:** [Month range]
+- **Duration:** [Recommended days]
+- **Budget:** [Approximate cost per person]
+- **Must-try food:** [Local specialty]
+- **Pro tip:** [One useful piece of advice]
+
+## The Return
+
+Describe leaving. Was it hard? Did the place change how you see things?
+
+Leaving **[Destination]** felt [emotion]. As the [vehicle] pulled away, I realized this place had become more than a pin on a map — it was now a memory that would surface every time I [specific trigger].

@@ -62,7 +62,7 @@ export function ContactSection() {
     <section id="contact" className="relative py-24 md:py-32">
       <div className="mx-auto max-w-6xl px-6">
         <FadeUp>
-          <p className="mb-2 font-mono text-sm text-primary">05 — Contact</p>
+          <p className="mb-2 font-mono text-sm text-primary">06 — Contact</p>
           <h2 className="mb-4 text-3xl font-bold tracking-tight md:text-4xl">
             Let&apos;s <span className="text-gradient">connect</span>
           </h2>
