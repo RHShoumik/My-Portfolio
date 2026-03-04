@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getAllPosts } from "@/lib/blog";
+import { getAllTravelPosts } from "@/lib/travel";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://rhshoumik.dev";
@@ -9,6 +10,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: new Date(post.date),
     changeFrequency: "monthly" as const,
     priority: 0.7,
+  }));
+
+  const travelPosts = getAllTravelPosts().map((post) => ({
+    url: `${baseUrl}/travel/${post.slug}`,
+    lastModified: new Date(post.date),
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
   }));
 
   return [
@@ -24,6 +32,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.8,
     },
+    {
+      url: `${baseUrl}/travel`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
     ...blogPosts,
+    ...travelPosts,
   ];
 }
