@@ -37,22 +37,35 @@ export const metadata: Metadata = {
   description: siteConfig.description,
   metadataBase: new URL(siteConfig.url),
   keywords: [
+    "Ragib Hassan Shoumik",
+    "Ragib Hassan",
+    "Shoumik",
+    "rhshoumik",
+    "RH Shoumik",
+    "Ragib Shoumik",
     "React",
     "Next.js",
     "TypeScript",
     "Frontend Engineer",
-    "Ragib Hassan Shoumik",
     "Portfolio",
     "Web Developer",
     "Tailwind CSS",
+    "JavaScript Developer",
+    "Full Stack Developer",
+    "rhshoumik.dev",
+    "Bangladesh Developer",
+    "React Developer Bangladesh",
   ],
   authors: [{ name: siteConfig.name, url: siteConfig.url }],
   creator: siteConfig.name,
+  alternates: {
+    canonical: siteConfig.url,
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
     url: siteConfig.url,
-    title: siteConfig.name,
+    title: `${siteConfig.name} — ${siteConfig.title}`,
     description: siteConfig.description,
     siteName: siteConfig.name,
     images: [
@@ -66,9 +79,11 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: siteConfig.name,
+    title: `${siteConfig.name} — ${siteConfig.title}`,
     description: siteConfig.description,
     images: [`${siteConfig.url}/api/og`],
+    creator: "@rhshoumik",
+    site: "@rhshoumik",
   },
   robots: {
     index: true,
@@ -90,6 +105,27 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Person",
+              name: "Ragib Hassan Shoumik",
+              alternateName: ["Ragib Hassan", "Shoumik", "rhshoumik", "RH Shoumik"],
+              url: siteConfig.url,
+              jobTitle: "Frontend Engineer",
+              description:
+                "Senior Frontend Engineer specializing in React, Next.js, and TypeScript.",
+              sameAs: [
+                siteConfig.links.github,
+                `https://linkedin.com/in/rhshoumik`,
+              ],
+            }),
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

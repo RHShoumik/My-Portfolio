@@ -2,7 +2,7 @@ export const siteConfig = {
   name: "Ragib Hassan Shoumik",
   title: "Frontend Engineer | React & Next.js Specialist",
   description:
-    "Senior Frontend Engineer with 4+ years of experience building scalable web applications with React, Next.js, and TypeScript. Specializing in e-commerce platforms, SaaS products, and modern UI architectures.",
+    "Ragib Hassan Shoumik (RHShoumik) —  Frontend Engineer with 4+ years of experience building scalable web applications with React, Next.js, and TypeScript. Specializing in e-commerce platforms, SaaS products, and modern UI architectures.",
   url: "https://rhshoumik.dev",
   ogImage: "https://rhshoumik.dev/og.png",
   links: {

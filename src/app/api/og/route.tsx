@@ -4,11 +4,13 @@ import type { NextRequest } from "next/server";
 export const runtime = "edge";
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
+  const { searchParams, origin } = new URL(req.url);
   const title = searchParams.get("title") ?? "Ragib Hassan Shoumik";
   const description =
     searchParams.get("description") ??
     "Frontend Engineer | React & Next.js Specialist";
+
+  const photoUrl = `${origin}/images/about-photo.jpeg`;
 
   return new ImageResponse(
     (
@@ -17,7 +19,7 @@ export async function GET(req: NextRequest) {
           height: "100%",
           width: "100%",
           display: "flex",
-          flexDirection: "column",
+          flexDirection: "row",
           alignItems: "center",
           justifyContent: "center",
           backgroundColor: "#0a0a0b",
@@ -25,6 +27,8 @@ export async function GET(req: NextRequest) {
             "radial-gradient(circle at 25px 25px, #1a1a2e 1px, transparent 0)",
           backgroundSize: "50px 50px",
           fontFamily: "system-ui, sans-serif",
+          padding: "60px",
+          gap: "60px",
         }}
       >
         {/* Gradient overlay */}
@@ -41,24 +45,37 @@ export async function GET(req: NextRequest) {
           }}
         />
 
+        {/* Profile photo */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={photoUrl}
+          width={220}
+          height={220}
+          alt="Ragib Hassan Shoumik"
+          style={{
+            borderRadius: "50%",
+            border: "4px solid #6366f1",
+            objectFit: "cover",
+            flexShrink: 0,
+          }}
+        />
+
         {/* Content */}
         <div
           style={{
             display: "flex",
             flexDirection: "column",
-            alignItems: "center",
+            alignItems: "flex-start",
             justifyContent: "center",
-            padding: "60px",
-            maxWidth: "900px",
-            textAlign: "center",
+            flex: 1,
           }}
         >
-          {/* Logo mark */}
+          {/* Website */}
           <div
             style={{
-              fontSize: "28px",
+              fontSize: "22px",
               color: "#6366f1",
-              marginBottom: "24px",
+              marginBottom: "16px",
               fontWeight: 700,
               display: "flex",
             }}
@@ -66,10 +83,10 @@ export async function GET(req: NextRequest) {
             rhshoumik.dev
           </div>
 
-          {/* Title */}
+          {/* Name / Title */}
           <div
             style={{
-              fontSize: "56px",
+              fontSize: "52px",
               fontWeight: 800,
               color: "#e2e8f0",
               lineHeight: 1.1,
@@ -83,7 +100,7 @@ export async function GET(req: NextRequest) {
           {/* Description */}
           <div
             style={{
-              fontSize: "24px",
+              fontSize: "22px",
               color: "#94a3b8",
               lineHeight: 1.4,
               display: "flex",
@@ -93,7 +110,7 @@ export async function GET(req: NextRequest) {
           </div>
         </div>
 
-        {/* Bottom bar */}
+        {/* Bottom gradient bar */}
         <div
           style={{
             position: "absolute",
