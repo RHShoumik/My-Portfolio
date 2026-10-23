@@ -13,13 +13,16 @@ export default function BlogPage() {
   const posts = getAllPosts();
 
   return (
-    <main className="min-h-screen pt-28 pb-20">
-      <div className="mx-auto max-w-3xl px-6">
-        <p className="mb-2 font-mono text-sm text-primary">Blog</p>
-        <h1 className="mb-4 text-3xl font-bold tracking-tight md:text-4xl">
-          Writing & thoughts
+    <main className="min-h-screen pt-28 pb-20 md:pt-32">
+      <div className="mx-auto max-w-3xl px-5 md:px-8">
+        <p className="index-num mb-2 font-mono text-xs uppercase tracking-widest text-[var(--palette-swatch)]">
+          Blog
+        </p>
+        <h1 className="mb-4 text-3xl font-bold tracking-tight md:text-5xl">
+          Writing &{" "}
+          <span className="font-serif italic font-normal text-gradient">thoughts</span>
         </h1>
-        <p className="mb-12 text-muted-foreground">
+        <p className="mb-14 text-muted-foreground">
           Occasional posts about frontend architecture, React patterns, and
           things I learn along the way.
         </p>
@@ -29,33 +32,35 @@ export default function BlogPage() {
             No posts yet. Check back soon!
           </p>
         ) : (
-          <div className="space-y-8">
-            {posts.map((post) => (
+          <div className="border-t border-border">
+            {posts.map((post, i) => (
               <Link
                 key={post.slug}
                 href={`/blog/${post.slug}`}
-                className="group block rounded-xl border border-border/50 bg-card/50 p-6 transition-all hover:border-primary/30 hover:shadow-lg"
+                data-cursor="READ"
+                className="group flex flex-col gap-2 border-b border-border py-7"
               >
-                <time className="font-mono text-xs text-muted-foreground">
-                  {new Date(post.date).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </time>
-                <h2 className="mt-2 text-xl font-semibold text-foreground transition-colors group-hover:text-primary">
+                <div className="flex items-baseline gap-4">
+                  <span className="index-num text-xs text-muted-foreground/50">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <time className="font-mono text-xs text-muted-foreground">
+                    {new Date(post.date).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </time>
+                </div>
+                <h2 className="pl-10 text-xl font-semibold text-foreground transition-colors group-hover:text-[var(--palette-swatch)] md:text-2xl">
                   {post.title}
                 </h2>
-                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                <p className="pl-10 text-sm leading-relaxed text-muted-foreground">
                   {post.description}
                 </p>
-                <div className="mt-4 flex flex-wrap gap-1.5">
+                <div className="mt-1 flex flex-wrap gap-1.5 pl-10">
                   {post.tags.map((tag) => (
-                    <Badge
-                      key={tag}
-                      variant="secondary"
-                      className="text-[10px] font-normal"
-                    >
+                    <Badge key={tag} variant="secondary">
                       {tag}
                     </Badge>
                   ))}

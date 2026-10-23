@@ -1,88 +1,99 @@
 "use client";
 
+import { useState } from "react";
 import { FadeUp } from "@/components/motion";
 import { experiences } from "@/lib/constants";
-import { Badge } from "@/components/ui/badge";
-import { motion } from "framer-motion";
-import { Briefcase } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Plus } from "lucide-react";
 
 export function ExperienceSection() {
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+
   return (
     <section id="experience" className="relative py-24 md:py-32">
-      {/* Subtle background gradient */}
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_bottom_left,var(--palette-swatch)_0%,transparent_50%)] opacity-[0.04]" />
-
-      <div className="mx-auto max-w-4xl px-6">
+      <div className="mx-auto max-w-7xl px-5 md:px-8">
         <FadeUp>
-          <p className="mb-2 font-mono text-sm text-primary">
+          <p className="index-num mb-2 font-mono text-xs uppercase tracking-widest text-[var(--palette-swatch)]">
             02 — Experience
           </p>
-          <h2 className="mb-12 text-3xl font-bold tracking-tight md:text-4xl">
-            Where I&apos;ve <span className="text-gradient">worked</span>
+          <h2 className="mb-14 text-3xl font-bold tracking-tight md:text-5xl">
+            Where I&apos;ve{" "}
+            <span className="font-serif italic font-normal text-gradient">worked</span>
           </h2>
         </FadeUp>
 
-        {/* Timeline */}
-        <div className="relative">
-          {/* Vertical line */}
-          <div className="absolute left-[19px] top-2 bottom-2 w-px bg-border md:left-1/2 md:-translate-x-px" />
-
-          {experiences.map((exp, i) => (
-            <FadeUp key={exp.company} delay={i * 0.1}>
-              <div
-                className={`relative mb-12 flex flex-col pl-12 md:mb-16 md:pl-0 ${
-                  i % 2 === 0
-                    ? "md:pr-[calc(50%+2rem)] md:text-right"
-                    : "md:pl-[calc(50%+2rem)]"
-                }`}
-              >
-                {/* Timeline dot */}
-                <motion.div
-                  className={`absolute left-2 top-1.5 z-10 flex size-[14px] items-center justify-center rounded-full border-2 border-primary bg-background md:left-1/2 md:-translate-x-1/2`}
-                  initial={{ scale: 0 }}
-                  whileInView={{ scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 + 0.2, type: "spring" }}
-                >
-                  <span className="size-[6px] rounded-full bg-primary" />
-                </motion.div>
-
-                {/* Content */}
-                <div className="glass-card group p-5 transition-all hover:border-primary/30 hover:shadow-lg">
-                  <div className={`flex items-start gap-3 ${i % 2 === 0 ? "md:flex-row-reverse" : ""}`}>
-                    <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                      <Briefcase className="size-4" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-foreground">
-                        {exp.role}
-                      </h3>
-                      <p className="mb-1 text-sm font-medium text-primary">
+        <div className="border-t border-border">
+          {experiences.map((exp, i) => {
+            const isOpen = openIndex === i;
+            return (
+              <FadeUp key={exp.company} delay={i * 0.05}>
+                <div className="border-b border-border">
+                  <button
+                    onClick={() => setOpenIndex(isOpen ? null : i)}
+                    className="group flex w-full flex-col gap-2 py-6 text-left md:flex-row md:items-baseline md:justify-between md:gap-6"
+                    aria-expanded={isOpen}
+                  >
+                    <div className="flex items-baseline gap-4 md:gap-8">
+                      <span className="index-num shrink-0 text-xs text-muted-foreground/50">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span
+                        className={`text-2xl font-bold tracking-tight transition-colors sm:text-3xl md:text-4xl ${
+                          isOpen ? "text-[var(--palette-swatch)]" : "group-hover:text-[var(--palette-swatch)]"
+                        }`}
+                      >
                         {exp.company}
-                      </p>
-                      <p className="mb-3 font-mono text-xs text-muted-foreground">
-                        {exp.period}
-                      </p>
-                      <p className={`mb-3 text-sm text-muted-foreground leading-relaxed ${i % 2 === 0 ? "md:text-right" : ""}`}>
-                        {exp.description}
-                      </p>
-                      <div className={`flex flex-wrap gap-1.5 ${i % 2 === 0 ? "md:justify-end" : ""}`}>
-                        {exp.tech.map((t) => (
-                          <Badge
-                            key={t}
-                            variant="secondary"
-                            className="text-[10px] font-normal"
-                          >
-                            {t}
-                          </Badge>
-                        ))}
-                      </div>
+                      </span>
                     </div>
+
+                    <div className="flex items-center gap-5 pl-10 font-mono text-xs uppercase tracking-wide text-muted-foreground md:pl-0">
+                      <span className="hidden sm:inline">{exp.role}</span>
+                      <span>{exp.period}</span>
+                      <motion.span
+                        animate={{ rotate: isOpen ? 45 : 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="flex size-6 shrink-0 items-center justify-center border border-foreground/40 text-foreground"
+                      >
+                        <Plus className="size-3.5" />
+                      </motion.span>
+                    </div>
+                  </button>
+
+                  <div className="pl-10 sm:hidden">
+                    <p className="mb-3 -mt-2 font-mono text-xs text-muted-foreground">{exp.role}</p>
                   </div>
+
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.4, ease: [0.21, 0.47, 0.32, 0.98] }}
+                        className="overflow-hidden"
+                      >
+                        <div className="max-w-2xl pb-8 pl-10 md:pl-16">
+                          <p className="mb-4 text-sm leading-relaxed text-muted-foreground md:text-base">
+                            {exp.description}
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {exp.tech.map((t) => (
+                              <span
+                                key={t}
+                                className="border border-border px-2.5 py-1 font-mono text-[10px] uppercase tracking-wide text-muted-foreground"
+                              >
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
-              </div>
-            </FadeUp>
-          ))}
+              </FadeUp>
+            );
+          })}
         </div>
       </div>
     </section>

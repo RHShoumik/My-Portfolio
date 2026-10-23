@@ -43,17 +43,17 @@ export default async function BlogPostPage({ params }: Props) {
   if (!post) notFound();
 
   return (
-    <main className="min-h-screen pt-28 pb-20">
-      <article className="mx-auto max-w-3xl px-6">
+    <main className="min-h-screen pt-28 pb-20 md:pt-32">
+      <article className="mx-auto max-w-3xl px-5 md:px-8">
         <Link
           href="/blog"
-          className="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="ink-underline mb-10 inline-flex items-center gap-2 pb-0.5 font-mono text-xs uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="size-3.5" />
           Back to blog
         </Link>
 
-        <header className="mb-10">
+        <header className="mb-10 border-b border-border pb-8">
           <time className="font-mono text-xs text-muted-foreground">
             {new Date(post.date).toLocaleDateString("en-US", {
               year: "numeric",
@@ -61,19 +61,15 @@ export default async function BlogPostPage({ params }: Props) {
               day: "numeric",
             })}
           </time>
-          <h1 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+          <h1 className="mt-3 text-3xl font-bold tracking-tight md:text-5xl">
             {post.title}
           </h1>
           <p className="mt-3 text-lg text-muted-foreground">
             {post.description}
           </p>
-          <div className="mt-4 flex flex-wrap gap-1.5">
+          <div className="mt-5 flex flex-wrap gap-1.5">
             {post.tags.map((tag) => (
-              <Badge
-                key={tag}
-                variant="secondary"
-                className="text-[10px] font-normal"
-              >
+              <Badge key={tag} variant="secondary">
                 {tag}
               </Badge>
             ))}

@@ -1,14 +1,12 @@
 "use client";
 
 import { FadeUp, Magnetic } from "@/components/motion";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { siteConfig } from "@/lib/constants";
-import { Github, Linkedin, Mail, Send, ArrowUpRight } from "lucide-react";
+import { Github, Linkedin, Mail, ArrowUpRight, Send } from "lucide-react";
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
-import { motion } from "framer-motion";
 
 export function ContactSection() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -41,50 +39,46 @@ export function ContactSection() {
   }
 
   const socialLinks = [
-    {
-      label: "GitHub",
-      href: siteConfig.links.github,
-      icon: Github,
-    },
-    {
-      label: "LinkedIn",
-      href: siteConfig.links.linkedin,
-      icon: Linkedin,
-    },
-    {
-      label: "Email",
-      href: siteConfig.links.email,
-      icon: Mail,
-    },
+    { label: "GitHub", href: siteConfig.links.github, icon: Github },
+    { label: "LinkedIn", href: siteConfig.links.linkedin, icon: Linkedin },
+    { label: "Email", href: siteConfig.links.email, icon: Mail },
   ];
+
+  const emailAddress = siteConfig.links.email.replace("mailto:", "");
 
   return (
     <section id="contact" className="relative py-24 md:py-32">
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-7xl px-5 md:px-8">
         <FadeUp>
-          <p className="mb-2 font-mono text-sm text-primary">06 — Contact</p>
-          <h2 className="mb-4 text-3xl font-bold tracking-tight md:text-4xl">
-            Let&apos;s <span className="text-gradient">connect</span>
+          <p className="index-num mb-2 font-mono text-xs uppercase tracking-widest text-[var(--palette-swatch)]">
+            06 — Contact
+          </p>
+          <h2 className="mb-8 text-3xl font-bold tracking-tight md:text-5xl">
+            Let&apos;s{" "}
+            <span className="font-serif italic font-normal text-gradient">connect</span>
           </h2>
-          <p className="mb-12 max-w-xl text-muted-foreground">
-            Have a project in mind, want to collaborate, or just say hello?
-            I&apos;d love to hear from you.
+        </FadeUp>
+
+        <FadeUp delay={0.1}>
+          <Link
+            href={siteConfig.links.email}
+            data-cursor="SAY HI"
+            className="ink-underline group mb-4 inline-block break-all font-serif text-3xl italic leading-tight text-foreground transition-colors hover:text-[var(--palette-swatch)] sm:text-5xl md:text-7xl"
+          >
+            {emailAddress}
+          </Link>
+          <p className="mb-16 font-mono text-xs uppercase tracking-wide text-muted-foreground">
+            Based in Dhaka, BD — usually replies within 24–48h
           </p>
         </FadeUp>
 
-        <div className="grid gap-12 md:grid-cols-5">
+        <div className="grid gap-12 border-t border-border pt-12 lg:grid-cols-12">
           {/* Contact Form */}
-          <FadeUp delay={0.1} className="md:col-span-3">
-            <form
-              onSubmit={handleSubmit}
-              className="glass-card space-y-5 p-6 md:p-8"
-            >
-              <div className="grid gap-4 sm:grid-cols-2">
+          <FadeUp delay={0.15} className="lg:col-span-7">
+            <form onSubmit={handleSubmit} className="space-y-7">
+              <div className="grid gap-7 sm:grid-cols-2">
                 <div>
-                  <label
-                    htmlFor="name"
-                    className="mb-1.5 block text-sm font-medium"
-                  >
+                  <label htmlFor="name" className="mb-2 block font-mono text-xs uppercase tracking-wide text-muted-foreground">
                     Name
                   </label>
                   <Input
@@ -92,14 +86,11 @@ export function ContactSection() {
                     name="name"
                     placeholder="Your name"
                     required
-                    className="bg-background/50"
+                    className="rounded-none border-0 border-b border-border bg-transparent px-0 py-2 shadow-none focus-visible:ring-0 focus-visible:border-[var(--palette-swatch)]"
                   />
                 </div>
                 <div>
-                  <label
-                    htmlFor="email"
-                    className="mb-1.5 block text-sm font-medium"
-                  >
+                  <label htmlFor="email" className="mb-2 block font-mono text-xs uppercase tracking-wide text-muted-foreground">
                     Email
                   </label>
                   <Input
@@ -108,81 +99,64 @@ export function ContactSection() {
                     type="email"
                     placeholder="you@example.com"
                     required
-                    className="bg-background/50"
+                    className="rounded-none border-0 border-b border-border bg-transparent px-0 py-2 shadow-none focus-visible:ring-0 focus-visible:border-[var(--palette-swatch)]"
                   />
                 </div>
               </div>
               <div>
-                <label
-                  htmlFor="message"
-                  className="mb-1.5 block text-sm font-medium"
-                >
+                <label htmlFor="message" className="mb-2 block font-mono text-xs uppercase tracking-wide text-muted-foreground">
                   Message
                 </label>
                 <Textarea
                   id="message"
                   name="message"
                   placeholder="Tell me about your project..."
-                  rows={5}
+                  rows={4}
                   required
-                  className="bg-background/50"
+                  className="rounded-none border-0 border-b border-border bg-transparent px-0 py-2 shadow-none focus-visible:ring-0 focus-visible:border-[var(--palette-swatch)]"
                 />
               </div>
               <Magnetic>
-                <Button
+                <button
                   type="submit"
-                  size="lg"
-                  className="gap-2 rounded-full px-8"
                   disabled={status === "loading"}
+                  className="group inline-flex items-center gap-2.5 border border-foreground bg-foreground px-6 py-3 font-mono text-xs uppercase tracking-widest text-background transition-colors hover:bg-[var(--palette-swatch)] hover:border-[var(--palette-swatch)] disabled:opacity-50"
                 >
-                  <Send className="size-4" />
-                  {status === "loading"
-                    ? "Sending..."
-                    : status === "success"
-                    ? "Sent!"
-                    : "Send Message"}
-                </Button>
+                  <Send className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+                  {status === "loading" ? "Sending..." : status === "success" ? "Sent!" : "Send Message"}
+                </button>
               </Magnetic>
               {status === "error" && (
-                <p className="text-sm text-destructive">
-                  Something went wrong. Please try again.
-                </p>
+                <p className="text-sm text-destructive">Something went wrong. Please try again.</p>
               )}
             </form>
           </FadeUp>
 
-          {/* Social Links & Info */}
-          <FadeUp delay={0.2} className="md:col-span-2">
-            <div className="glass-card flex h-full flex-col justify-between p-6 md:p-8">
-              <div>
-                <h3 className="mb-4 text-lg font-semibold">Get in touch</h3>
-                <p className="mb-6 text-sm text-muted-foreground leading-relaxed">
-                  I&apos;m always interested in new opportunities and
-                  collaborations. Whether it&apos;s a full-time role, freelance
-                  project, or just a chat — reach out!
-                </p>
-              </div>
+          {/* Social Links */}
+          <FadeUp delay={0.25} className="lg:col-span-5">
+            <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+              I&apos;m always interested in new opportunities and
+              collaborations. Whether it&apos;s a full-time role, freelance
+              project, or just a chat — reach out.
+            </p>
 
-              <div className="space-y-3">
-                {socialLinks.map((link) => (
-                  <motion.div key={link.label} whileHover={{ x: 4 }}>
-                    <Link
-                      href={link.href}
-                      target={link.href.startsWith("http") ? "_blank" : undefined}
-                      rel="noopener noreferrer"
-                      className="group flex items-center gap-3 rounded-lg p-3 text-sm transition-colors hover:bg-accent"
-                    >
-                      <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                        <link.icon className="size-4" />
-                      </div>
-                      <span className="text-muted-foreground group-hover:text-foreground">
-                        {link.label}
-                      </span>
-                      <ArrowUpRight className="ml-auto size-3.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
-                    </Link>
-                  </motion.div>
-                ))}
-              </div>
+            <div className="border-t border-border">
+              {socialLinks.map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  target={link.href.startsWith("http") ? "_blank" : undefined}
+                  rel="noopener noreferrer"
+                  data-cursor="OPEN"
+                  className="group flex items-center justify-between border-b border-border py-4 text-sm transition-colors hover:text-[var(--palette-swatch)]"
+                >
+                  <span className="flex items-center gap-3">
+                    <link.icon className="size-4" />
+                    {link.label}
+                  </span>
+                  <ArrowUpRight className="size-4 -translate-x-1 translate-y-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100" />
+                </Link>
+              ))}
             </div>
           </FadeUp>
         </div>
