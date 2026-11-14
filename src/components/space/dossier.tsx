@@ -14,6 +14,7 @@ import {
   Mail,
   Mountain,
   RadioTower,
+  Rocket,
   RotateCcw,
   Send,
   X,
@@ -23,7 +24,8 @@ import { experiences, projects, siteConfig, skillGroups } from "@/lib/constants"
 import { getTravelStats, travelLocations } from "@/data/travel-data";
 import { playSound } from "@/lib/sound";
 import { DESTINATIONS, type Destination, type SectionId } from "./destinations";
-import { LEVEL, useSpace } from "./store";
+import { LEVELS } from "./levels";
+import { useLevel, useSpace } from "./store";
 
 export const glass =
   "rounded-2xl border border-white/12 bg-[#0b0e18]/75 text-white shadow-2xl backdrop-blur-md";
@@ -361,6 +363,8 @@ export function Dossier() {
   const phase = useSpace((s) => s.phase);
   const setOpen = useSpace((s) => s.setOpen);
   const retry = useSpace((s) => s.retry);
+  const nextLevel = useSpace((s) => s.nextLevel);
+  const LEVEL = useLevel();
   const score = useSpace((s) => s.score);
   const kills = useSpace((s) => s.kills);
 
@@ -380,6 +384,7 @@ export function Dossier() {
   const next = DESTINATIONS[(index + 1) % DESTINATIONS.length];
   const { title, body: Body } = CONTENT[open];
   const justLanded = phase === "arrived" && open === LEVEL.section;
+  const upNext = LEVELS[LEVEL.number];
 
   return (
     <aside
@@ -408,19 +413,28 @@ export function Dossier() {
         {justLanded && (
           <div className="mb-5 rounded-xl border border-[#ff9a73]/30 bg-[#ff9a73]/10 p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#ffb394]">
-              Landed on {LEVEL.to} · Level {LEVEL.number} complete
+              Landed on {LEVEL.site.name} · Level {LEVEL.number} complete
             </p>
             <p className="mt-2 font-display text-2xl font-bold tabular-nums">
               {score.toLocaleString()} <span className="text-sm font-medium text-white/60">pts · {kills} destroyed</span>
             </p>
             <p className="mt-1 text-sm text-white/75">
-              You unlocked my {LEVEL.unlocks}. The flight to {LEVEL.next} is coming soon, and every
-              other section is open from the planet menu.
+              {upNext
+                ? `You unlocked my ${LEVEL.unlocks}. Next stop: ${upNext.to}, to unlock my ${upNext.unlocks}.`
+                : `You unlocked my ${LEVEL.unlocks} and finished every level. Thanks for flying all the way out here.`}
             </p>
-            <button type="button" onClick={retry} className={`${secondaryBtn} mt-3`}>
-              <RotateCcw className="size-4" />
-              Fly again
-            </button>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {upNext && (
+                <button type="button" onClick={nextLevel} className={primaryBtn}>
+                  <Rocket className="size-4" />
+                  Fly to {upNext.to}
+                </button>
+              )}
+              <button type="button" onClick={retry} className={secondaryBtn}>
+                <RotateCcw className="size-4" />
+                Fly again
+              </button>
+            </div>
           </div>
         )}
         <Body />

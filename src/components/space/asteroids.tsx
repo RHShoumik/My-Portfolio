@@ -1,11 +1,12 @@
 // SPIKE: throwaway prototype of the space game. Not production code.
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { mergeVertices } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { fbm, hash } from "./noise";
+import { useLevel } from "./store";
 import { rocks, rocksPerVariant, ROCK_VARIANTS } from "./world";
 
 export function makeRockGeometry(seed: number) {
@@ -44,6 +45,7 @@ export function makeRockGeometry(seed: number) {
 }
 
 export function Asteroids() {
+  const tint = useLevel().rocks.tint;
   const meshes = useRef<(THREE.InstancedMesh | null)[]>([]);
   const geometries = useMemo(
     () => Array.from({ length: ROCK_VARIANTS }, (_, i) => makeRockGeometry(i * 7 + 3)),
@@ -53,6 +55,10 @@ export function Asteroids() {
     () => new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.96, metalness: 0.04 }),
     []
   );
+  // Rock in the inner system, ice further out.
+  useEffect(() => {
+    material.color.set(tint);
+  }, [material, tint]);
 
   const m = useMemo(() => new THREE.Matrix4(), []);
   const q = useMemo(() => new THREE.Quaternion(), []);

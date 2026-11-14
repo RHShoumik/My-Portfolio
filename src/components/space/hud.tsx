@@ -8,6 +8,7 @@ import {
   Bot,
   Gauge,
   Heart,
+  Lock,
   Palmtree,
   Plane,
   Rocket,
@@ -21,10 +22,10 @@ import { playSound, setSoundEnabled, unlockAudio, useSoundEnabled } from "@/lib/
 import { contactLinks, Dossier, glass, PlanetBadge, primaryBtn, secondaryBtn } from "./dossier";
 import { DESTINATIONS } from "./destinations";
 import { MAX_MISSILES } from "./combat";
-import { AUTOPILOT_AFTER, input, LEVEL, MAX_LIVES, useSpace } from "./store";
+import { EvaHud } from "./eva-hud";
+import { LEVELS } from "./levels";
+import { AUTOPILOT_AFTER, input, MAX_LIVES, useLevel, useSpace } from "./store";
 
-/** Average Earth–Mars distance, for the countdown in the progress bar. */
-const EARTH_MARS_MKM = 225;
 
 const chip = `pointer-events-auto ${glass} px-3.5 py-2 text-sm font-medium`;
 
@@ -42,12 +43,13 @@ function Lives({ lives }: { lives: number }) {
 }
 
 function Progress({ progress }: { progress: number }) {
-  const left = Math.max(0, (1 - progress) * EARTH_MARS_MKM);
+  const LEVEL = useLevel();
+  const left = Math.max(0, (1 - progress) * LEVEL.distance);
   return (
     <div className={`${glass} w-[min(92vw,26rem)] px-4 py-2.5`}>
       <div className="flex items-center justify-between text-xs font-medium text-white/70">
         <span>{LEVEL.from}</span>
-        <span className="tabular-nums text-white">{left.toFixed(1)} million km to go</span>
+        <span className="tabular-nums text-white">{left.toFixed(left < 100 ? 1 : 0)} million km to go</span>
         <span>{LEVEL.to}</span>
       </div>
       <div className="relative mt-2 h-1.5 rounded-full bg-white/15">
@@ -329,7 +331,44 @@ function PilotProfile() {
   );
 }
 
+/** Pick any level you have reached. Locked ones show a padlock. */
+function LevelPicker() {
+  const level = useSpace((s) => s.level);
+  const unlocked = useSpace((s) => s.unlocked);
+  const selectLevel = useSpace((s) => s.selectLevel);
+  return (
+    <div className="mt-3 flex flex-wrap gap-1.5" role="group" aria-label="Choose a level">
+      {LEVELS.map((l, i) => {
+        const locked = i > unlocked;
+        const current = i === level;
+        return (
+          <button
+            key={l.number}
+            type="button"
+            disabled={locked}
+            aria-pressed={current}
+            onClick={() => selectLevel(i)}
+            title={locked ? `Land on ${LEVELS[i - 1].site.name} to unlock` : `${l.from} → ${l.to}`}
+            className={`pointer-events-auto inline-flex h-8 items-center gap-1 rounded-full border px-3 text-xs font-semibold transition-colors ${
+              current
+                ? "border-[#ff9a73]/70 bg-[#ff9a73]/20 text-white"
+                : locked
+                  ? "cursor-not-allowed border-white/10 text-white/30"
+                  : "border-white/20 text-white/75 hover:bg-white/10"
+            }`}
+          >
+            {locked && <Lock className="size-3" />}
+            {l.number} · {l.to}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export function Hud() {
+  const LEVEL = useLevel();
+  const nextLevel = useSpace((s) => s.nextLevel);
   const phase = useSpace((s) => s.phase);
   const lives = useSpace((s) => s.lives);
   const crashes = useSpace((s) => s.crashes);
@@ -340,6 +379,7 @@ export function Hud() {
   const setOpen = useSpace((s) => s.setOpen);
   const caption = useSpace((s) => s.caption);
   const land = useSpace((s) => s.land);
+  const depart = useSpace((s) => s.depart);
   const soundOn = useSoundEnabled();
   const inFlight = phase === "flying" || phase === "crashed";
 
@@ -356,12 +396,12 @@ export function Hud() {
 
   return (
     <div className="pointer-events-none absolute inset-0 select-none">
-      {phase === "flying" && <DragSteer />}
+      {(phase === "flying" || (phase === "eva" && !open)) && <DragSteer />}
 
       {/* Top bar (hidden during the landing cinematic) */}
       <div
         className={`absolute inset-x-0 top-0 flex flex-wrap items-start justify-between gap-x-3 gap-y-2 p-2.5 transition-opacity duration-500 md:p-4 ${
-          phase === "landing" ? "invisible opacity-0" : "opacity-100"
+          phase === "landing" || phase === "takeoff" ? "invisible opacity-0" : "opacity-100"
         }`}
       >
         <div className="flex items-center gap-2">
@@ -373,13 +413,13 @@ export function Hud() {
             </>
           ) : (
             <span className={`${glass} hidden px-3.5 py-2 text-sm text-white/80 sm:inline`}>
-              Level {LEVEL.number} of {LEVEL.total}
+              Level {LEVEL.number} of {LEVELS.length}
             </span>
           )}
         </div>
 
         <div className="order-3 flex w-full justify-center lg:order-none lg:w-auto">
-          {inFlight ? <Progress progress={progress} /> : <PlanetMenu />}
+          {inFlight ? <Progress progress={progress} /> : phase === "eva" ? null : <PlanetMenu />}
         </div>
 
         <div className="flex items-center gap-2">
@@ -408,7 +448,8 @@ export function Hud() {
         </div>
       </div>
 
-      {inFlight && <AlertBanner />}
+      {(inFlight || phase === "eva") && <AlertBanner />}
+      {phase === "eva" && <EvaHud />}
 
       {/* Fire and boost (touch screens) */}
       {phase === "flying" && (
@@ -439,17 +480,17 @@ export function Hud() {
           <PilotProfile />
           <div className="my-5 h-px bg-white/10" />
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#ff9a73]">
-            Mission · Level {LEVEL.number} of {LEVEL.total}
+            Mission · Level {LEVEL.number} of {LEVELS.length}
           </p>
           <p className="mt-1 font-display text-xl font-bold">
             {LEVEL.from} → {LEVEL.to}
           </p>
           <p className="mt-1 text-sm leading-relaxed text-white/65">
-            Fight your way to {LEVEL.to} through enemy fighters, missiles, mines and asteroids, then land
-            to unlock my {LEVEL.unlocks}.
+            {LEVEL.intro}, then land to unlock my {LEVEL.unlocks}.
             <span className="hidden sm:inline"> Or pick any planet at the top to read without flying.</span>
           </p>
-          <p className="mt-2 text-xs text-white/50">
+          <LevelPicker />
+          <p className="mt-3 text-xs text-white/50">
             <span className="[@media(pointer:coarse)]:hidden">
               Guns fire on their own · Steer W A S D · Space launches a missile · Shift boosts
             </span>
@@ -483,6 +524,15 @@ export function Hud() {
               Grumman F-14 Tomcat
             </a>{" "}
             by Muhamad Mirza Arrafi ·{" "}
+            <a
+              className="pointer-events-auto underline decoration-white/25 underline-offset-2 hover:text-white/70"
+              href="https://sketchfab.com/3d-models/astronaut-by-jungle-jim-c775a977606a4e4e990afe783c6bc845"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Astronaut
+            </a>{" "}
+            by Jungle Jim ·{" "}
             <a
               className="pointer-events-auto underline decoration-white/25 underline-offset-2 hover:text-white/70"
               href="https://creativecommons.org/licenses/by/4.0/"
@@ -526,7 +576,7 @@ export function Hud() {
         </Card>
       )}
 
-      {phase === "landing" && (
+      {(phase === "landing" || phase === "takeoff") && (
         <>
           <div className="absolute inset-x-0 top-0 h-[9vh] bg-black animate-in slide-in-from-top duration-700" />
           <div className="absolute inset-x-0 bottom-0 h-[9vh] bg-black animate-in slide-in-from-bottom duration-700" />
@@ -541,7 +591,7 @@ export function Hud() {
           )}
           <button
             type="button"
-            onClick={land}
+            onClick={phase === "takeoff" ? depart : land}
             className="pointer-events-auto absolute bottom-[calc(4.5vh-1rem)] right-4 inline-flex h-8 items-center gap-1.5 rounded-full border border-white/25 px-3.5 text-xs font-semibold text-white/80 transition-colors hover:bg-white/10"
           >
             Skip
@@ -551,10 +601,16 @@ export function Hud() {
       )}
 
       {phase === "arrived" && open === null && (
-        <div className="pointer-events-auto absolute inset-x-0 bottom-6 flex justify-center gap-2.5">
+        <div className="pointer-events-auto absolute inset-x-0 bottom-6 flex flex-wrap justify-center gap-2.5 px-4">
           <button type="button" onClick={() => setOpen(LEVEL.section)} className={primaryBtn}>
             Open my {LEVEL.unlocks}
           </button>
+          {LEVEL.number < LEVELS.length && (
+            <button type="button" onClick={nextLevel} className={`${secondaryBtn} bg-[#0b0e18]/60 backdrop-blur-md`}>
+              <Rocket className="size-4" />
+              Fly to {LEVELS[LEVEL.number].to}
+            </button>
+          )}
           <button type="button" onClick={retry} className={`${secondaryBtn} bg-[#0b0e18]/60 backdrop-blur-md`}>
             <RotateCcw className="size-4" />
             Fly again

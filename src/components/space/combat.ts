@@ -2,7 +2,8 @@
 import * as THREE from "three";
 import { playSound } from "@/lib/sound";
 import { rocketLive, useSpace } from "./store";
-import { CORRIDOR, rocks, type Rock } from "./world";
+import { LEVELS, type Level } from "./levels";
+import { CORRIDOR, layoutRocks, rocks, type Rock } from "./world";
 
 /*
  * Everything you can shoot, and everything that can shoot you.
@@ -40,8 +41,11 @@ export const CONVERGE = 150;
 
 const BOLT_SPEED = 430;
 const ENEMY_BOLT_SPEED = 150;
-const FIGHTER_SPEED = 46;
-const MISSILE_SPEED = 92;
+/** Enemy speeds and aggression; set per level by loadLevel. */
+let FIGHTER_SPEED = 46;
+let MISSILE_SPEED = 92;
+let FIRE_GAP = 1;
+let FIGHTER_HP = 2;
 const PLAYER_MISSILE_SPEED = 270;
 /** How far ahead the guns will lock on. */
 const LOCK_RANGE = 300;
@@ -124,31 +128,33 @@ function seeded(seed: number) {
   };
 }
 
-const makeProps = (zs: number[], r: number, hp: number, seed: number): Prop[] => {
-  const rnd = seeded(seed);
-  return zs.map((z) => {
-    const base = V().set((rnd() * 2 - 1) * CORRIDOR.x * 0.85, (rnd() * 2 - 1) * CORRIDOR.y * 0.8, z);
-    return {
-      pos: base.clone(),
-      base,
-      r,
-      maxHp: hp,
-      hp,
-      alive: true,
-      axis: V().set(rnd() - 0.5, rnd() - 0.5, rnd() - 0.5).normalize(),
-      spin: 0.2 + rnd() * 0.5,
-      phase: rnd() * Math.PI * 2,
-    };
-  });
-};
+const makeProps = (n: number, r: number, hp: number): Prop[] =>
+  Array.from({ length: n }, () => ({
+    pos: V(),
+    base: V(),
+    r,
+    maxHp: hp,
+    hp,
+    alive: true,
+    axis: V().set(0, 1, 0),
+    spin: 0,
+    phase: 0,
+  }));
 
-export const satellites = makeProps([-260, -540, -780, -2080, -2420, -2720, -2960], 3.0, 3, 11);
-export const mines = makeProps(
-  [-960, -990, -1030, -1060, -1100, -1130, -1170, -1200, -2330, -2370, -2400, -2440, -2480, -2520],
-  1.7,
-  1,
-  23
-);
+/** Put props at these depths, at seeded spots across the corridor. */
+function placeProps(list: Prop[], zs: number[], seed: number) {
+  const rnd = seeded(seed);
+  list.forEach((p, i) => {
+    p.base.set((rnd() * 2 - 1) * CORRIDOR.x * 0.85, (rnd() * 2 - 1) * CORRIDOR.y * 0.8, zs[i % zs.length]);
+    p.pos.copy(p.base);
+    p.axis.set(rnd() - 0.5, rnd() - 0.5, rnd() - 0.5).normalize();
+    p.spin = 0.2 + rnd() * 0.5;
+    p.phase = rnd() * Math.PI * 2;
+  });
+}
+
+export const satellites = makeProps(7, 3.0, 3);
+export const mines = makeProps(14, 1.7, 1);
 
 /* ------------------------------------------------------------------ */
 /*  Targets: anything that can be shot, behind one small interface     */
@@ -204,23 +210,33 @@ interface Wave {
   text: string;
   done: boolean;
 }
-const WAVES: Wave[] = [
-  { at: -60, kind: "note", text: "Guns fire on their own · Space launches a missile", done: false },
-  { at: -380, kind: "fighters", count: 3, text: "Enemy fighters ahead", done: false },
-  { at: -880, kind: "note", text: "Minefield · one shot sets off the whole cluster", done: false },
-  { at: -1240, kind: "fighters", count: 4, text: "Enemy fighters ahead", done: false },
-  { at: -1400, kind: "note", text: "Entering the asteroid belt", done: false },
-  { at: -1620, kind: "missiles", count: 2, text: "Missile warning", done: false },
-  { at: -1960, kind: "missiles", count: 3, text: "Missile warning", done: false },
-  { at: -2220, kind: "fighters", count: 5, text: "Enemy squadron ahead", done: false },
-  { at: -2600, kind: "missiles", count: 2, text: "Missile warning", done: false },
-  { at: -2800, kind: "fighters", count: 3, text: "Last wave before Mars", done: false },
-  { at: -3010, kind: "missiles", count: 2, text: "Missile warning", done: false },
-];
+let WAVES: Wave[] = [];
+let loaded: Level | null = null;
+
+/** Lay out the rocks, props and enemy script for a level. */
+function loadLevel(level: Level) {
+  if (loaded === level) return;
+  loaded = level;
+  layoutRocks(level);
+  placeProps(satellites, level.satellites, level.rocks.seed + 11);
+  // Two minefields of seven, each a tight cluster spread along 240 units.
+  const mineZs = level.minefields.flatMap((z) => Array.from({ length: 7 }, (_, i) => z - i * 36));
+  placeProps(mines, mineZs, level.rocks.seed + 23);
+  WAVES = level.waves.map(([kind, at, count, text]) => ({
+    kind,
+    at,
+    count,
+    done: false,
+    text: text ?? (kind === "fighters" ? "Enemy fighters ahead" : "Missile warning"),
+  }));
+  ({ fighterSpeed: FIGHTER_SPEED, missileSpeed: MISSILE_SPEED, fireGap: FIRE_GAP, hp: FIGHTER_HP } = level.enemy);
+}
+loadLevel(LEVELS[0]);
 
 export const combat = { cooldown: 0, side: 1, ammo: MAX_MISSILES, recharge: 0, missileSide: 1 };
 
 export function resetCombat() {
+  loadLevel(LEVELS[useSpace.getState().level]);
   for (const r of rocks) {
     r.alive = true;
     r.hp = r.maxHp;
@@ -439,11 +455,11 @@ function startWave(w: Wave, sz: number) {
       if (!f) break;
       const slot = i - (n - 1) / 2;
       f.active = true;
-      f.hp = 2;
+      f.hp = FIGHTER_HP;
       f.baseX = THREE.MathUtils.clamp(slot * 9 + (rand() - 0.5) * 4, -CORRIDOR.x, CORRIDOR.x);
       f.baseY = (rand() - 0.5) * CORRIDOR.y * 1.2;
       f.phase = rand() * Math.PI * 2;
-      f.fireIn = 0.8 + rand() * 1.6;
+      f.fireIn = (0.8 + rand() * 1.6) * FIRE_GAP;
       f.roll = 0;
       // A V formation: the leader in front
       f.pos.set(f.baseX, f.baseY, sz - 560 - Math.abs(slot) * 16);
@@ -616,7 +632,7 @@ export function updateCombat(
     if (ahead > 70 && ahead < 380) {
       f.fireIn -= dt;
       if (f.fireIn <= 0) {
-        f.fireIn = 1.3 + rand() * 1.4;
+        f.fireIn = (1.3 + rand() * 1.4) * FIRE_GAP;
         fireEnemy(f.pos, sx, sy, sz);
       }
     }

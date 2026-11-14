@@ -4,7 +4,9 @@
 import { useMemo, useRef } from "react";
 import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { EARTH, MARS, MOON, SUN_DIR } from "./world";
+import type { Body } from "./levels";
+import { useLevel } from "./store";
+import { departurePos, EARTH, landingPos, MOON, SUN_DIR, targetPos } from "./world";
 
 /* ------------------------------------------------------------------ */
 /*  3D simplex noise (Ashima Arts / Ian McEwan, MIT licence)           */
@@ -197,20 +199,96 @@ export function Moon() {
   );
 }
 
-export function Mars() {
-  const map = useMap("/space/mars.jpg");
-  const spin = useRef<THREE.Mesh>(null);
+/** Saturn's rings: bands of ice drawn into a strip, mapped from the inner to the outer edge. */
+function makeRingTexture() {
+  const c = document.createElement("canvas");
+  c.width = 512;
+  c.height = 4;
+  const g = c.getContext("2d")!;
+  for (let x = 0; x < 512; x++) {
+    const u = x / 512;
+    // The Cassini division, a dark gap two thirds of the way out
+    const gap = Math.abs(u - 0.66) < 0.025 ? 0.08 : 1;
+    const band = 0.55 + 0.45 * Math.sin(u * 90) * Math.sin(u * 23 + 1.3);
+    const a = Math.max(0, Math.min(1, (0.3 + band * 0.6) * gap * (u < 0.04 ? u / 0.04 : 1)));
+    const l = 200 + band * 40;
+    g.fillStyle = `rgba(${l},${l * 0.93},${l * 0.8},${a})`;
+    g.fillRect(x, 0, 1, 4);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+export function Ring({ radius }: { radius: number }) {
+  const texture = useMemo(() => makeRingTexture(), []);
+  const geometry = useMemo(() => {
+    const inner = radius * 1.25;
+    const outer = radius * 2.3;
+    const g = new THREE.RingGeometry(inner, outer, 160, 1);
+    // Map u from the inner edge (0) to the outer edge (1).
+    const pos = g.attributes.position as THREE.BufferAttribute;
+    const uv = g.attributes.uv as THREE.BufferAttribute;
+    const v = new THREE.Vector3();
+    for (let i = 0; i < pos.count; i++) {
+      v.fromBufferAttribute(pos, i);
+      uv.setXY(i, (v.length() - inner) / (outer - inner), 0.5);
+    }
+    return g;
+  }, [radius]);
+  return (
+    <mesh geometry={geometry} rotation={[-Math.PI / 2, 0, 0]}>
+      <meshStandardMaterial map={texture} transparent side={THREE.DoubleSide} depthWrite={false} roughness={1} />
+    </mesh>
+  );
+}
+
+/** Any planet or moon: a NASA map (optionally tinted), an atmosphere and rings. */
+export function Planet({ body, position, spin = 0.01 }: { body: Body; position: THREE.Vector3; spin?: number }) {
+  const map = useMap(body.map);
+  const mesh = useRef<THREE.Mesh>(null);
   useFrame((_, dt) => {
-    if (spin.current) spin.current.rotation.y += dt * 0.01;
+    if (mesh.current) mesh.current.rotation.y += dt * spin;
   });
   return (
-    <group position={MARS.pos} rotation={[0.44, 0, 0]}>
-      <mesh ref={spin}>
-        <sphereGeometry args={[MARS.r, 128, 96]} />
-        <meshStandardMaterial map={map} roughness={0.95} metalness={0} />
+    <group position={position} rotation={[body.tilt ?? 0, 0, (body.tilt ?? 0) * 0.4]}>
+      <mesh ref={mesh}>
+        <sphereGeometry args={[body.r, 128, 96]} />
+        <meshStandardMaterial map={map} color={body.tint ?? "#ffffff"} roughness={0.95} metalness={0} />
       </mesh>
-      <Atmosphere radius={MARS.r * 1.02} color="#ffa070" strength={1.1} />
+      {body.atmosphere && (
+        <Atmosphere radius={body.r * 1.02} color={body.atmosphere} strength={body.atmosphereStrength ?? 1} />
+      )}
+      {body.ring && <Ring radius={body.r} />}
+      {body.clouds && <Clouds radius={body.r * 1.012} />}
     </group>
+  );
+}
+
+// Fetch every planet map up front, so switching level never waits on a download.
+for (const url of ["/space/mars.jpg", "/space/jupiter.jpg", "/space/saturn.jpg", "/space/earth.jpg", "/space/moon.jpg"]) {
+  useLoader.preload(THREE.TextureLoader, url);
+}
+
+/** The planets of the current level: where you left, where you are going, and where you land. */
+export function Planets() {
+  const level = useLevel();
+  const from = useMemo(() => departurePos(level), [level]);
+  const to = useMemo(() => targetPos(level), [level]);
+  const land = useMemo(() => landingPos(level), [level]);
+  return (
+    <>
+      {level.number === 1 ? (
+        <>
+          <Earth />
+          <Moon />
+        </>
+      ) : (
+        <Planet body={level.departure} position={from} spin={0.006} />
+      )}
+      <Planet body={level.target} position={to} spin={0.004} />
+      {level.landing && <Planet body={level.landing} position={land} spin={0.008} />}
+    </>
   );
 }
 
