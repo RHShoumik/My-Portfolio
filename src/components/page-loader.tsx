@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { playSound } from "@/lib/sound";
 
 const ease = [0.76, 0, 0.24, 1] as const;
 
@@ -15,6 +16,7 @@ export function PageLoader() {
     if (sessionStorage.getItem("rhs_loaded")) {
       return;
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sessionStorage is client-only; the loader must decide after mount
     setVisible(true);
 
     const minVisible = 5000; // minimum visible time in ms
@@ -34,6 +36,7 @@ export function PageLoader() {
         // keep loader visible for at least `minVisible`, then allow a short delay
         setTimeout(() => {
           setDone(true);
+          playSound("whoosh"); // only audible if the visitor has already interacted
           sessionStorage.setItem("rhs_loaded", "1");
         }, wait + 250);
       }

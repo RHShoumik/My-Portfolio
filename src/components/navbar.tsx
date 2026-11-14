@@ -1,145 +1,129 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { ArrowUpRight, Gamepad2, Menu, X } from "lucide-react";
 import { navItems, siteConfig } from "@/lib/constants";
-import { cn } from "@/lib/utils";
-import { Magnetic } from "@/components/motion";
-import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/logo";
 
 export function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handler, { passive: true });
-    return () => window.removeEventListener("scroll", handler);
-  }, []);
+    document.documentElement.style.overflow = open ? "hidden" : "";
+    return () => {
+      document.documentElement.style.overflow = "";
+    };
+  }, [open]);
 
   return (
-    <motion.header
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.6, ease: [0.21, 0.47, 0.32, 0.98] }}
-      className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        scrolled
-          ? "glass border-b border-border/50 shadow-sm"
-          : "bg-transparent"
-      )}
-    >
-      <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        {/* Logo */}
-        <Link href="/" className="group flex items-center gap-2">
-          <AnimatedSignature />
-          <span className="font-mono text-sm font-semibold tracking-tight text-foreground">
-            {siteConfig.name.split(" ")[0].toLowerCase()}
-            <span className="text-primary">.dev</span>
-          </span>
-        </Link>
+    <>
+      <header className="fixed inset-x-0 top-3 z-50 px-3 md:top-4 md:px-5">
+        <nav className="mx-auto flex max-w-5xl items-center justify-between rounded-full border border-border bg-background/75 py-2 pl-5 pr-2 shadow-sm backdrop-blur-xl">
+          <Link href="/" className="group" aria-label="Home">
+            <Logo />
+          </Link>
 
-        {/* Desktop Nav */}
-        <ul className="hidden md:flex items-center gap-1">
-          {navItems.map((item) => (
-            <li key={item.href}>
-              <Magnetic strength={0.15}>
-                <Link
-                  href={item.href}
-                  className="relative px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {item.label}
-                </Link>
-              </Magnetic>
-            </li>
-          ))}
-        </ul>
-
-        {/* Mobile Hamburger */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="md:hidden"
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label="Toggle navigation menu"
-        >
-          {isOpen ? <X className="size-5" /> : <Menu className="size-5" />}
-        </Button>
-      </nav>
-
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="glass border-t border-border/50 md:hidden"
-          >
-            <ul className="flex flex-col items-center gap-1 px-6 py-4">
-              {navItems.map((item) => (
-                <li key={item.href} className="w-full">
+          <ul className="hidden items-center gap-0.5 md:flex">
+            {navItems.map((item) =>
+              item.label === "Contact" ? (
+                <li key={item.href} className="ml-1">
                   <Link
                     href={item.href}
-                    onClick={() => setIsOpen(false)}
-                    className="block rounded-lg px-4 py-3 text-center text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                    className="inline-flex rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background transition-opacity hover:opacity-85"
                   >
                     {item.label}
                   </Link>
                 </li>
-              ))}
-            </ul>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.header>
-  );
-}
+              ) : (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className="rounded-full px-3.5 py-2 text-sm text-foreground/65 transition-colors hover:bg-foreground/[0.06] hover:text-foreground"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              )
+            )}
+          </ul>
 
-/* Animated SVG Signature Logo */
-function AnimatedSignature() {
-  return (
-    <motion.svg
-      width="28"
-      height="28"
-      viewBox="0 0 28 28"
-      fill="none"
-      className="text-primary"
-      initial="hidden"
-      animate="visible"
-    >
-      <motion.path
-        d="M4 20 L8 6 L14 18 L20 4 L24 20"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-        variants={{
-          hidden: { pathLength: 0 },
-          visible: {
-            pathLength: 1,
-            transition: { duration: 1.5, ease: "easeInOut" },
-          },
-        }}
-      />
-      <motion.circle
-        cx="24"
-        cy="20"
-        r="2"
-        fill="currentColor"
-        variants={{
-          hidden: { opacity: 0, scale: 0 },
-          visible: {
-            opacity: 1,
-            scale: 1,
-            transition: { delay: 1.2, duration: 0.3 },
-          },
-        }}
-      />
-    </motion.svg>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/space"
+              className="inline-flex items-center gap-2 rounded-full bg-[var(--palette-swatch)] px-4 py-2 text-sm font-semibold text-[var(--on-accent)] transition-opacity hover:opacity-90"
+            >
+              <Gamepad2 className="size-4" />
+              Play 3D
+            </Link>
+            <button
+              onClick={() => setOpen(true)}
+              className="flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background md:hidden"
+              aria-label="Open menu"
+            >
+              <Menu className="size-4" />
+              <span className="hidden sm:inline">Menu</span>
+            </button>
+          </div>
+        </nav>
+      </header>
+
+      {open && (
+        <div className="fixed inset-0 z-[60] flex flex-col bg-background animate-in fade-in slide-in-from-top-3 duration-200">
+          <div className="flex items-center justify-between px-5 py-4">
+            <Logo />
+            <button
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background"
+              aria-label="Close menu"
+            >
+              <X className="size-4" />
+              Close
+            </button>
+          </div>
+
+          <ul className="flex flex-1 flex-col justify-center px-6">
+            <li className="border-b border-border">
+              <Link
+                href="/space"
+                onClick={() => setOpen(false)}
+                className="group flex items-center justify-between py-4"
+              >
+                <span className="font-display text-4xl font-bold tracking-[-0.04em] text-[var(--palette-swatch)]">
+                  Play 3D
+                </span>
+                <Gamepad2 className="size-6 text-[var(--palette-swatch)]" />
+              </Link>
+            </li>
+            {navItems.map((item) => (
+              <li key={item.href} className="border-b border-border">
+                <Link
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className="group flex items-center justify-between py-4"
+                >
+                  <span className="font-display text-4xl font-bold tracking-[-0.04em] transition-colors group-hover:text-[var(--palette-swatch)]">
+                    {item.label}
+                  </span>
+                  <ArrowUpRight className="size-6 text-foreground/40 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          <div className="flex items-center gap-6 px-6 py-6 text-sm text-foreground/55">
+            <Link href={siteConfig.links.github} target="_blank" rel="noopener noreferrer" className="hover:text-foreground">
+              GitHub
+            </Link>
+            <Link href={siteConfig.links.linkedin} target="_blank" rel="noopener noreferrer" className="hover:text-foreground">
+              LinkedIn
+            </Link>
+            <Link href={siteConfig.links.email} className="hover:text-foreground">
+              Email
+            </Link>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

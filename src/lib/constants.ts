@@ -7,8 +7,8 @@ export const siteConfig = {
   ogImage: "https://rhshoumik.dev/og.png",
   links: {
     github: "https://github.com/rhshoumik",
-    linkedin: "https://linkedin.com/in/rhshoumik",
-    email: "mailto:contact@rhshoumik.dev",
+    linkedin: "https://www.linkedin.com/in/ragib-hassan/",
+    email: "mailto:rhshoumik101@gmail.com",
   },
 } as const;
 
@@ -35,12 +35,12 @@ export const palettes: {
   label: string;
   color: string;
 }[] = [
-  { id: "default", label: "Slate", color: "#64748b" },
-  { id: "emerald", label: "Emerald", color: "#10b981" },
-  { id: "indigo", label: "Indigo", color: "#6366f1" },
-  { id: "rose", label: "Rose", color: "#f43f5e" },
-  { id: "amber", label: "Amber", color: "#f59e0b" },
-  { id: "cyan", label: "Cyan", color: "#06b6d4" },
+  { id: "default", label: "Jade", color: "#187258" },
+  { id: "emerald", label: "Green", color: "#0f9f72" },
+  { id: "indigo", label: "Violet", color: "#7c5cff" },
+  { id: "rose", label: "Pink", color: "#e5397f" },
+  { id: "amber", label: "Orange", color: "#f26a1b" },
+  { id: "cyan", label: "Cyan", color: "#0891b2" },
 ];
 
 export const experiences = [
@@ -67,14 +67,6 @@ export const experiences = [
     description:
       "Built the influencer marketing platform frontend from the ground up. Implemented real-time dashboards, campaign analytics, and PayPal payment flows for a Singapore-based startup.",
     tech: ["React.js", "TypeScript", "Tailwind CSS", "PayPal", "Chart.js"],
-  },
-  {
-    company: "Driftion",
-    role: "Frontend Developer",
-    period: "2021 — 2022",
-    description:
-      "Developed interactive web applications and landing pages for various clients. Focused on pixel-perfect implementations, responsive design, and cross-browser compatibility.",
-    tech: ["React.js", "JavaScript", "SCSS", "Framer Motion"],
   },
   {
     company: "Workspace InfoTech Limited",
