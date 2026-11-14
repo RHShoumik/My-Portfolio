@@ -7,6 +7,7 @@ import { ScrollProgress } from "@/components/scroll-progress";
 import { CustomCursor } from "@/components/custom-cursor";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { siteConfig } from "@/lib/constants";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { PageLoader } from "@/components/page-loader";
 
@@ -138,6 +139,7 @@ export default function RootLayout({
           <Footer />
           <ThemeSwitcher />
         </Providers>
+        <Analytics />
       </body>
     </html>
   );
