@@ -1,36 +1,39 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
-import { ScrollProgress } from "@/components/scroll-progress";
-import { CustomCursor } from "@/components/custom-cursor";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { PageLoader } from "@/components/page-loader";
+import { SoundEffects } from "@/components/sound-effects";
+import { SoundToggle } from "@/components/sound-toggle";
 import { siteConfig } from "@/lib/constants";
 import "./globals.css";
-import { PageLoader } from "@/components/page-loader";
+import { Analytics } from '@vercel/analytics/next';
+
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-bricolage",
+  subsets: ["latin"],
+  axes: ["opsz"],
+  display: "swap",
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-});
-
-const instrumentSerif = Instrument_Serif({
-  variable: "--font-instrument-serif",
-  subsets: ["latin"],
-  weight: "400",
-  style: ["normal", "italic"],
+  display: "swap",
 });
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f5f2e9" },
-    { media: "(prefers-color-scheme: dark)", color: "#1b1815" },
+    { media: "(prefers-color-scheme: light)", color: "#f5f5ef" },
+    { media: "(prefers-color-scheme: dark)", color: "#101713" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -114,6 +117,12 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{if(sessionStorage.getItem('rhs_loaded'))document.documentElement.setAttribute('data-seen','1')}catch(e){}",
+          }}
+        />
+        <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
@@ -127,23 +136,23 @@ export default function RootLayout({
                 "Senior Frontend Engineer specializing in React, Next.js, and TypeScript.",
               sameAs: [
                 siteConfig.links.github,
-                `https://linkedin.com/in/rhshoumik`,
+                siteConfig.links.linkedin,
               ],
             }),
           }}
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} antialiased`}
+        className={`${bricolage.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Analytics />
         <Providers>
-          <div className="grain pointer-events-none fixed inset-0 z-[2]" aria-hidden="true" />
           <PageLoader />
-          <ScrollProgress />
-          <CustomCursor />
+          <SoundEffects />
           <Navbar />
           <main className="min-h-screen">{children}</main>
           <Footer />
+          <SoundToggle />
           <ThemeSwitcher />
         </Providers>
       </body>

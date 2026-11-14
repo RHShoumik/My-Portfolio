@@ -1,130 +1,114 @@
-"use client";
-
-import { FadeUp, StaggerContainer, StaggerItem, Counter, TiltCard } from "@/components/motion";
-import { Code2, Layers, ShoppingCart, Scaling } from "lucide-react";
-import { experiences, projects } from "@/lib/constants";
 import Image from "next/image";
+import { Clock, Mountain } from "lucide-react";
+import { SectionHeader } from "@/components/section-header";
+import { LocalTime } from "@/components/local-time";
 
-const highlights = [
-  {
-    icon: Code2,
-    title: "4+ Years React",
-    description: "Deep expertise in React ecosystem, from hooks to server components.",
-  },
-  {
-    icon: Layers,
-    title: "TypeScript First",
-    description: "End-to-end type safety with advanced patterns and generics.",
-  },
-  {
-    icon: ShoppingCart,
-    title: "E-commerce Systems",
-    description: "Built multi-vendor marketplaces serving millions of users.",
-  },
-  {
-    icon: Scaling,
-    title: "Scalable Architecture",
-    description: "Component systems, design tokens, and micro-frontend patterns.",
-  },
-];
-
-const stats = [
-  { value: 4, suffix: "+", label: "Years experience" },
-  { value: experiences.length, suffix: "", label: "Companies" },
-  { value: projects.length, suffix: "", label: "Flagship products" },
-  { value: 40, suffix: "%", label: "Faster load times" },
+const stack = [
+  "React.js",
+  "Next.js",
+  "TypeScript",
+  "Tailwind CSS",
+  "React Query",
+  "Stripe",
 ];
 
 export function AboutSection() {
   return (
-    <section id="about" className="relative py-24 md:py-32">
-      <div className="mx-auto max-w-7xl px-5 md:px-8">
-        <FadeUp>
-          <p className="index-num mb-2 font-mono text-xs uppercase tracking-widest text-[var(--palette-swatch)]">
-            01 — About
-          </p>
-          <h2 className="mb-16 max-w-2xl text-3xl font-bold leading-tight tracking-tight md:text-5xl">
-            From console logs to{" "}
-            <span className="font-serif italic font-normal text-gradient">
-              mountain fogs.
-            </span>
-          </h2>
-        </FadeUp>
+    <section id="about" className="py-24 md:py-32">
+      <div className="mx-auto max-w-6xl px-5 md:px-8">
+        <SectionHeader
+          eyebrow="About"
+          title="From console logs to mountain fogs."
+        />
 
-        <div className="grid gap-12 lg:grid-cols-12">
-          {/* Photo + stats */}
-          <FadeUp delay={0.1} className="lg:col-span-4">
-            <div className="relative mx-auto max-w-xs lg:mx-0 lg:max-w-none">
-              <TiltCard max={8} className="relative overflow-hidden border border-border">
-                <Image
-                  src="/images/about-photo.jpeg"
-                  alt="Ragib Hassan Shoumik — hiking"
-                  width={400}
-                  height={500}
-                  className="aspect-[4/5] h-auto w-full object-cover grayscale-[20%]"
-                />
-              </TiltCard>
-              {/* eslint-disable-next-line react/jsx-no-comment-textnodes -- intentional caption text, not a JSX comment */}
-              <p className="mt-3 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                // off-screen, trekking somewhere far
+        <div className="mt-14 grid gap-4 md:grid-cols-6">
+          {/* Bio */}
+          <div className="card space-y-5 p-7 leading-7 text-foreground/75 md:col-span-4 md:row-span-2 md:p-9">
+            <p>
+              I&apos;m Shoumik, a frontend engineer from Dhaka. For over four
+              years I&apos;ve been building web apps with React, Next.js and
+              TypeScript, and most of what I&apos;ve shipped is used by real
+              people every day: shoppers, restaurant owners, club members.
+            </p>
+            <p>
+              I started out in 2020 at a small company, making responsive
+              websites and React apps, then moved through a few startups where
+              I got to do a bit of everything. At 6amTech I shipped major
+              features for 6amMart and StackFood, two multi-vendor marketplaces
+              with millions of users. These days I&apos;m at JustGo
+              Technologies, building a membership system for clubs and national
+              governing bodies: bookings, payments, admin tools, all of it.
+            </p>
+            <p>
+              What I enjoy most is the unglamorous side of the job: components
+              other people can pick up without a tour, pages that load fast,
+              forms that don&apos;t fight you. And when I log off, I go
+              travelling. Sajek above the clouds, the long beach at
+              Cox&apos;s Bazar, the hills of Bandarban. Trekking clears my head
+              better than any debugger.
+            </p>
+          </div>
+
+          {/* Photo */}
+          <div className="card relative min-h-72 overflow-hidden md:col-span-2 md:row-span-2">
+            <Image
+              src="/images/about-photo.jpeg"
+              alt="Ragib on a hike, surrounded by hills and fog"
+              fill
+              sizes="(min-width: 768px) 33vw, 100vw"
+              className="object-cover"
+            />
+          </div>
+
+          {/* Quick facts */}
+          <div className="card flex flex-col justify-between p-6 md:col-span-2">
+            <p className="font-display text-5xl font-bold tracking-[-0.05em]">
+              4<span className="text-[var(--palette-swatch)]">+</span>
+            </p>
+            <p className="mt-6 text-sm text-foreground/60">
+              years building for the web
+            </p>
+          </div>
+
+          <div className="card flex flex-col justify-between p-6 md:col-span-2">
+            <Clock className="size-5 text-[var(--palette-swatch)]" />
+            <div className="mt-6">
+              <p className="font-display text-3xl font-bold tracking-[-0.04em]">
+                <LocalTime />
+              </p>
+              <p className="mt-1 text-sm text-foreground/60">
+                in Dhaka, Bangladesh
               </p>
             </div>
+          </div>
 
-            <div className="mt-8 grid grid-cols-2 gap-px overflow-hidden border border-border bg-border">
-              {stats.map((stat) => (
-                <div key={stat.label} className="bg-background p-4">
-                  <div className="index-num text-3xl font-bold text-foreground md:text-4xl">
-                    <Counter value={stat.value} suffix={stat.suffix} />
-                  </div>
-                  <p className="mt-1 text-xs text-muted-foreground">{stat.label}</p>
-                </div>
+          <div className="card flex flex-col justify-between p-6 md:col-span-2">
+            <Mountain className="size-5 text-[var(--palette-swatch)]" />
+            <div className="mt-6">
+              <p className="font-display text-xl font-bold tracking-[-0.03em]">
+                Trekking &amp; travel
+              </p>
+              <p className="mt-1 text-sm text-foreground/60">
+                what I do off the clock
+              </p>
+            </div>
+          </div>
+
+          {/* Stack */}
+          <div className="card p-6 md:col-span-6 md:p-7">
+            <p className="text-sm font-medium text-foreground/60">
+              What I use most
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {stack.map((tool) => (
+                <span
+                  key={tool}
+                  className="rounded-full border border-border bg-secondary px-3.5 py-1.5 text-sm font-medium"
+                >
+                  {tool}
+                </span>
               ))}
             </div>
-          </FadeUp>
-
-          {/* Bio + highlights */}
-          <div className="lg:col-span-8">
-            <FadeUp delay={0.2}>
-              <div className="space-y-4 text-base leading-relaxed text-muted-foreground md:text-lg">
-                <p>
-                  I&apos;m a Frontend Engineer specializing in React and Next.js with a
-                  passion for building products that are fast, accessible, and
-                  beautifully crafted. Over the past 4+ years, I&apos;ve worked across
-                  startups and product companies, shipping features used by millions.
-                </p>
-                <p>
-                  My journey spans from early-stage startups where I wore multiple hats,
-                  to enterprise-grade platforms at 6amTech where I architected
-                  multi-vendor marketplace frontends. Currently at JustGo Technologies,
-                  I lead frontend development for membership-management platforms with
-                  complex booking flows and real-time data.
-                </p>
-                <p>
-                  I care deeply about developer experience — clean abstractions,
-                  reusable component systems, and codebases that scale gracefully.
-                  When I&apos;m not coding, you&apos;ll find me traveling and exploring
-                  new places — discovering cultures, trekking through nature, and
-                  finding inspiration beyond the screen.
-                </p>
-              </div>
-            </FadeUp>
-
-            {/* Highlights */}
-            <StaggerContainer className="mt-12" staggerDelay={0.1}>
-              <div className="grid grid-cols-1 gap-px overflow-hidden border border-border bg-border sm:grid-cols-2">
-                {highlights.map((item) => (
-                  <StaggerItem key={item.title}>
-                    <div className="group h-full bg-background p-5 transition-colors hover:bg-accent/40">
-                      <item.icon className="mb-3 size-5 text-[var(--palette-swatch)] transition-transform group-hover:scale-110" />
-                      <h3 className="mb-1 text-sm font-semibold">{item.title}</h3>
-                      <p className="text-xs leading-relaxed text-muted-foreground">
-                        {item.description}
-                      </p>
-                    </div>
-                  </StaggerItem>
-                ))}
-              </div>
-            </StaggerContainer>
           </div>
         </div>
       </div>

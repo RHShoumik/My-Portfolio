@@ -11,6 +11,13 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Old prototype paths still work.
+  async redirects() {
+    return [
+      { source: "/plain", destination: "/", permanent: true },
+      { source: "/game", destination: "/island", permanent: true },
+    ];
+  },
   experimental: {
     viewTransition: true,
   },

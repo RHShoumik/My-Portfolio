@@ -19,16 +19,18 @@ export const metadata: Metadata = {
 
 export default function TravelPage() {
   return (
-    <main className="min-h-screen pt-28 pb-20">
-      <div className="mx-auto max-w-6xl px-6">
+    <main className="min-h-screen pt-28 pb-24 md:pt-36">
+      <div className="mx-auto max-w-6xl px-5 md:px-8">
         {/* Section Header */}
         <FadeUp>
-          <p className="mb-2 font-mono text-sm text-primary">Travel</p>
-          <h1 className="text-3xl font-bold tracking-tight md:text-5xl">
-            Beyond Code —{" "}
-            <span className="text-gradient">The Roads That Shaped Me</span>
+          <p className="text-sm font-semibold text-[var(--palette-swatch)]">
+            off the clock
+          </p>
+          <h1 className="mt-1 font-display text-4xl font-semibold leading-[1.05] md:text-6xl">
+            Beyond code, the roads that{" "}
+            <span className="marker">shaped me</span>
           </h1>
-          <p className="mt-4 max-w-xl text-lg text-muted-foreground">
+          <p className="mt-4 max-w-xl text-lg text-foreground/75">
             Every journey rewrote a part of me.
           </p>
         </FadeUp>
@@ -50,9 +52,11 @@ export default function TravelPage() {
 
         {/* Travel Blog Cards */}
         <FadeUp delay={0.2} className="mt-16">
-          <h2 className="mb-2 font-mono text-sm text-primary">Stories</h2>
-          <p className="mb-8 text-2xl font-bold tracking-tight md:text-3xl">
-            Travel Journals
+          <h2 className="text-sm font-semibold text-[var(--palette-swatch)]">
+            stories
+          </h2>
+          <p className="mb-8 font-display text-3xl font-semibold tracking-tight md:text-4xl">
+            Travel journals
           </p>
           <TravelBlogCards />
         </FadeUp>

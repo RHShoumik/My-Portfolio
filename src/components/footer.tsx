@@ -2,63 +2,59 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { ArrowUp, Github, Linkedin, Mail } from "lucide-react";
 import { siteConfig } from "@/lib/constants";
-import { Github, Linkedin, Mail, ArrowUp } from "lucide-react";
 
 export function Footer() {
-  const currentYear = new Date().getFullYear();
+  const year = new Date().getFullYear();
   const [time, setTime] = useState<string | null>(null);
 
   useEffect(() => {
     const fmt = () =>
       new Intl.DateTimeFormat("en-US", {
-        hour: "2-digit",
+        hour: "numeric",
         minute: "2-digit",
-        second: "2-digit",
         timeZone: "Asia/Dhaka",
       }).format(new Date());
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- server/client clocks differ; must set after mount to avoid a hydration mismatch
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- server and client clocks differ; set after mount to avoid a hydration mismatch
     setTime(fmt());
-    const id = setInterval(() => setTime(fmt()), 1000);
+    const id = setInterval(() => setTime(fmt()), 30_000);
     return () => clearInterval(id);
   }, []);
 
+  const icon = "text-foreground/55 transition-colors hover:text-foreground";
+
   return (
     <footer className="border-t border-border">
-      <div className="mx-auto max-w-7xl px-5 py-10 md:px-8">
-        <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
-          <div>
-            <p className="font-serif text-2xl italic text-foreground">
-              rhshoumik<span className="text-[var(--palette-swatch)]">.dev</span>
-            </p>
-            <p className="mt-2 font-mono text-xs text-muted-foreground">
-              Dhaka, Bangladesh — {time ?? "--:--:--"} local
-            </p>
-          </div>
-
-          <div className="flex items-center gap-5">
-            <Link href={siteConfig.links.github} target="_blank" rel="noopener noreferrer" className="text-muted-foreground transition-colors hover:text-[var(--palette-swatch)]" aria-label="GitHub">
-              <Github className="size-4" />
-            </Link>
-            <Link href={siteConfig.links.linkedin} target="_blank" rel="noopener noreferrer" className="text-muted-foreground transition-colors hover:text-[var(--palette-swatch)]" aria-label="LinkedIn">
-              <Linkedin className="size-4" />
-            </Link>
-            <Link href={siteConfig.links.email} className="text-muted-foreground transition-colors hover:text-[var(--palette-swatch)]" aria-label="Email">
-              <Mail className="size-4" />
-            </Link>
-            <a
-              href="#hero"
-              className="ml-2 flex items-center gap-1.5 border border-border px-3 py-1.5 font-mono text-[10px] uppercase tracking-wide text-muted-foreground transition-colors hover:border-[var(--palette-swatch)] hover:text-[var(--palette-swatch)]"
-            >
-              <ArrowUp className="size-3" />
-              Top
-            </a>
-          </div>
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-10 md:flex-row md:items-center md:justify-between md:px-8">
+        <div className="text-sm text-foreground/55">
+          <p>
+            &copy; {year} {siteConfig.name}
+            {time ? <span> · it&apos;s {time} in Dhaka</span> : null}
+          </p>
+          <p className="mt-1 text-foreground/40">
+            Built with Next.js and Tailwind CSS.
+          </p>
         </div>
 
-        <p className="mt-8 font-mono text-[11px] text-muted-foreground/60">
-          &copy; {currentYear} {siteConfig.name}. Built with Next.js &amp; Tailwind CSS.
-        </p>
+        <div className="flex items-center gap-5">
+          <Link href={siteConfig.links.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" className={icon}>
+            <Github className="size-5" />
+          </Link>
+          <Link href={siteConfig.links.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className={icon}>
+            <Linkedin className="size-5" />
+          </Link>
+          <Link href={siteConfig.links.email} aria-label="Email" className={icon}>
+            <Mail className="size-5" />
+          </Link>
+          <a
+            href="#hero"
+            className="ml-1 inline-flex items-center gap-1.5 rounded-full border border-border px-3.5 py-1.5 text-sm text-foreground/70 transition-colors hover:border-foreground hover:text-foreground"
+          >
+            <ArrowUp className="size-3.5" />
+            Top
+          </a>
+        </div>
       </div>
     </footer>
   );

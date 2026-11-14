@@ -1,115 +1,86 @@
-"use client";
-
-import { FadeUp, ScaleOnHover } from "@/components/motion";
-import { travelLocations, getTravelStats } from "@/data/travel-data";
-import { MapPin, Route, Globe, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { getTravelStats, travelLocations } from "@/data/travel-data";
+import { SectionHeader } from "@/components/section-header";
 
 export function TravelSection() {
   const stats = getTravelStats();
-  // Show the 3 most recent locations
   const featured = [...travelLocations]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 3);
 
+  const figures = [
+    { value: stats.placesVisited, label: "places" },
+    {
+      value: stats.countriesExplored,
+      label: stats.countriesExplored === 1 ? "country" : "countries",
+    },
+    { value: `${stats.totalDistance.toLocaleString()} km`, label: "travelled" },
+  ];
+
   return (
-    <section id="travel" className="relative py-24 md:py-32">
-      <div className="mx-auto max-w-7xl px-5 md:px-8">
-        <FadeUp>
-          <p className="index-num mb-2 font-mono text-xs uppercase tracking-widest text-[var(--palette-swatch)]">
-            05 — Travel
-          </p>
-          <h2 className="mb-4 text-3xl font-bold tracking-tight md:text-5xl">
-            Beyond code —{" "}
-            <span className="font-serif italic font-normal text-gradient">the roads that shaped me</span>
-          </h2>
-          <p className="mb-12 max-w-xl text-muted-foreground">
-            The places I&apos;ve explored, the stories I carry. Every journey
-            adds a new perspective to the way I think and build.
-          </p>
-        </FadeUp>
+    <section id="travel" className="bg-[var(--tint)] py-24 md:py-32">
+      <div className="mx-auto max-w-6xl px-5 md:px-8">
+        <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+          <SectionHeader eyebrow="Travel" title="Beyond the keyboard">
+            The places I&apos;ve been and the stories I carried home. Every trip
+            changes how I think, and a little of how I build.
+          </SectionHeader>
 
-        {/* Stats strip */}
-        <FadeUp delay={0.1}>
-          <div className="mb-10 flex flex-wrap gap-x-8 gap-y-3 border-y border-border py-4 font-mono text-xs uppercase tracking-wide text-muted-foreground">
-            <span className="flex items-center gap-2">
-              <MapPin className="size-3.5 text-[var(--palette-swatch)]" />
-              <strong className="text-foreground">{stats.placesVisited}</strong>{" "}
-              places
-            </span>
-            <span className="flex items-center gap-2">
-              <Globe className="size-3.5 text-[var(--palette-swatch)]" />
-              <strong className="text-foreground">
-                {stats.countriesExplored}
-              </strong>{" "}
-              {stats.countriesExplored === 1 ? "country" : "countries"}
-            </span>
-            <span className="flex items-center gap-2">
-              <Route className="size-3.5 text-[var(--palette-swatch)]" />
-              <strong className="text-foreground">
-                {stats.totalDistance.toLocaleString()}
-              </strong>{" "}
-              km traveled
-            </span>
-          </div>
-        </FadeUp>
+          <dl className="flex gap-8">
+            {figures.map((f) => (
+              <div key={f.label}>
+                <dt className="sr-only">{f.label}</dt>
+                <dd className="font-display text-3xl font-bold tracking-[-0.04em]">
+                  {f.value}
+                </dd>
+                <p className="text-sm text-foreground/55">{f.label}</p>
+              </div>
+            ))}
+          </dl>
+        </div>
 
-        {/* Featured cards */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {featured.map((loc, i) => (
-            <FadeUp key={loc.slug} delay={i * 0.1}>
-              <ScaleOnHover>
-                <Link
-                  href={`/travel/${loc.slug}`}
-                  data-cursor="READ"
-                  className="group block"
-                >
-                  <div className="glass-card overflow-hidden transition-colors hover:border-[var(--palette-swatch)]">
-                    {/* Cover image */}
-                    <div className="relative aspect-[4/3] overflow-hidden">
-                      <Image
-                        src={loc.coverImage}
-                        alt={loc.city}
-                        fill
-                        className="object-cover grayscale-[10%] transition-transform duration-500 group-hover:scale-105"
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      />
-                      {/* Location badge */}
-                      <div className="absolute bottom-3 left-3 flex items-center gap-1.5 border border-white/20 bg-black/60 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wide text-white backdrop-blur-sm">
-                        <MapPin className="size-3" />
-                        {loc.city}, {loc.country}
-                      </div>
-                    </div>
-
-                    <div className="p-4">
-                      <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-                        {loc.description}
-                      </p>
-                      <div className="mt-3 flex items-center gap-1.5 font-mono text-xs uppercase tracking-wide text-[var(--palette-swatch)] opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                        Read the story
-                        <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </ScaleOnHover>
-            </FadeUp>
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {featured.map((loc) => (
+            <Link
+              key={loc.slug}
+              href={`/travel/${loc.slug}`}
+              className="card group flex h-full flex-col overflow-hidden"
+            >
+              <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+                <Image
+                  src={loc.coverImage}
+                  alt={`${loc.city}, ${loc.country}`}
+                  fill
+                  sizes="(min-width: 1024px) 360px, (min-width: 640px) 45vw, 90vw"
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+              </div>
+              <div className="flex flex-1 flex-col p-5">
+                <h3 className="font-display text-xl font-bold tracking-[-0.03em]">
+                  {loc.city}
+                </h3>
+                <p className="mt-0.5 text-sm text-foreground/50">
+                  {new Date(loc.date).toLocaleDateString("en-US", {
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </p>
+                <p className="mt-3 line-clamp-3 text-[15px] leading-relaxed text-foreground/70">
+                  {loc.description}
+                </p>
+              </div>
+            </Link>
           ))}
         </div>
 
-        {/* View all link */}
-        <FadeUp delay={0.4}>
-          <div className="mt-10">
-            <Link
-              href="/travel"
-              className="group inline-flex items-center gap-2.5 border border-foreground/70 px-6 py-3 font-mono text-xs uppercase tracking-widest transition-colors hover:border-[var(--palette-swatch)] hover:text-[var(--palette-swatch)]"
-            >
-              Explore all journeys
-              <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
-            </Link>
-          </div>
-        </FadeUp>
+        <div className="mt-12">
+          <Link href="/travel" className="btn">
+            See all trips
+            <ArrowRight className="size-4" />
+          </Link>
+        </div>
       </div>
     </section>
   );

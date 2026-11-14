@@ -8,8 +8,8 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
+  --font-display: var(--font-bricolage);
   --font-mono: var(--font-geist-mono);
-  --font-serif: var(--font-instrument-serif);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -39,6 +39,8 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-panel: var(--panel);
+  --color-panel-ink: #f2f3f8;
   --radius-sm: calc(var(--radius) - 3px);
   --radius-md: calc(var(--radius) - 1px);
   --radius-lg: var(--radius);
@@ -49,197 +51,143 @@
 }
 
 /* ============================================
-   BASE / DEFAULT PALETTE (Ink) — warm paper /
-   true-black canvas, monochrome-forward accent
+   LIGHT — warm paper, evergreen ink, jade accent
    ============================================ */
 :root {
-  --radius: 0.3rem;
-  --background: oklch(0.9691 0.0091 78.28);
-  --foreground: oklch(0.19 0.014 60);
-  --card: oklch(0.9911 0.0046 78.28);
-  --card-foreground: oklch(0.19 0.014 60);
-  --popover: oklch(0.9911 0.0046 78.28);
-  --popover-foreground: oklch(0.19 0.014 60);
-  --primary: oklch(0.19 0.014 60);
-  --primary-foreground: oklch(0.9691 0.0091 78.28);
-  --secondary: oklch(0.925 0.011 75);
-  --secondary-foreground: oklch(0.19 0.014 60);
-  --muted: oklch(0.925 0.011 75);
-  --muted-foreground: oklch(0.44 0.018 60);
-  --accent: oklch(0.925 0.011 75);
-  --accent-foreground: oklch(0.19 0.014 60);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.19 0.014 60 / 13%);
-  --input: oklch(0.19 0.014 60 / 18%);
-  --ring: oklch(0.19 0.014 60 / 40%);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.9911 0.0046 78.28);
-  --sidebar-foreground: oklch(0.19 0.014 60);
-  --sidebar-primary: oklch(0.19 0.014 60);
-  --sidebar-primary-foreground: oklch(0.9691 0.0091 78.28);
-  --sidebar-accent: oklch(0.925 0.011 75);
-  --sidebar-accent-foreground: oklch(0.19 0.014 60);
-  --sidebar-border: oklch(0.19 0.014 60 / 13%);
-  --sidebar-ring: oklch(0.19 0.014 60 / 40%);
-  /* Custom palette token */
-  --palette-hue: 60;
-  --palette-swatch: oklch(0.62 0.19 41);
-  --grain-opacity: 0.05;
-}
+  --radius: 0.75rem;
+  --background: #f5f5ef;
+  --foreground: #17251f;
+  --card: #fcfcf8;
+  --card-foreground: #17251f;
+  --popover: #fcfcf8;
+  --popover-foreground: #17251f;
+  --primary: var(--palette-swatch);
+  --primary-foreground: var(--on-accent);
+  --secondary: #e9ede7;
+  --secondary-foreground: #17251f;
+  --muted: #e9ede7;
+  --muted-foreground: #59665f;
+  --accent: #e9ede7;
+  --accent-foreground: #17251f;
+  --destructive: #d23a2c;
+  --border: rgb(23 37 31 / 0.11);
+  --input: rgb(23 37 31 / 0.17);
+  --ring: rgb(24 114 88 / 0.4);
+  --chart-1: #187258;
+  --chart-2: #d88355;
+  --chart-3: #6a8f77;
+  --chart-4: #d4a647;
+  --chart-5: #5473a0;
+  --sidebar: #fcfcf8;
+  --sidebar-foreground: #17251f;
+  --sidebar-primary: #187258;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e9ede7;
+  --sidebar-accent-foreground: #17251f;
+  --sidebar-border: rgb(23 37 31 / 0.11);
+  --sidebar-ring: rgb(24 114 88 / 0.4);
 
-.dark {
-  --background: oklch(0.16 0.008 60);
-  --foreground: oklch(0.955 0.007 78);
-  --card: oklch(0.195 0.009 60);
-  --card-foreground: oklch(0.955 0.007 78);
-  --popover: oklch(0.195 0.009 60);
-  --popover-foreground: oklch(0.955 0.007 78);
-  --primary: oklch(0.955 0.007 78);
-  --primary-foreground: oklch(0.16 0.008 60);
-  --secondary: oklch(0.255 0.01 60);
-  --secondary-foreground: oklch(0.955 0.007 78);
-  --muted: oklch(0.255 0.01 60);
-  --muted-foreground: oklch(0.65 0.012 70);
-  --accent: oklch(0.255 0.01 60);
-  --accent-foreground: oklch(0.955 0.007 78);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(0.955 0.007 78 / 12%);
-  --input: oklch(0.955 0.007 78 / 15%);
-  --ring: oklch(0.955 0.007 78 / 35%);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.195 0.009 60);
-  --sidebar-foreground: oklch(0.955 0.007 78);
-  --sidebar-primary: oklch(0.955 0.007 78);
-  --sidebar-primary-foreground: oklch(0.16 0.008 60);
-  --sidebar-accent: oklch(0.255 0.01 60);
-  --sidebar-accent-foreground: oklch(0.955 0.007 78);
-  --sidebar-border: oklch(0.955 0.007 78 / 12%);
-  --sidebar-ring: oklch(0.955 0.007 78 / 35%);
-  --palette-swatch: oklch(0.75 0.17 55);
-  --grain-opacity: 0.07;
+  /* Site-specific tokens */
+  --palette-swatch: #187258;
+  --on-accent: #ffffff;
+  --tint: #eaf0e9;
+  --panel: #14241e;
+  --rb-1: var(--palette-swatch);
+  --rb-2: color-mix(in srgb, var(--palette-swatch) 40%, white);
+  --rb-3: color-mix(in srgb, var(--palette-swatch) 70%, black);
 }
 
 /* ============================================
-   PALETTE: EMERALD  →  signal green highlighter
+   DARK — near-black
+   ============================================ */
+.dark {
+  --background: #101713;
+  --foreground: #edf2ec;
+  --card: #18221c;
+  --card-foreground: #edf2ec;
+  --popover: #18221c;
+  --popover-foreground: #edf2ec;
+  --secondary: #202c24;
+  --secondary-foreground: #edf2ec;
+  --muted: #202c24;
+  --muted-foreground: #a3b0a6;
+  --accent: #202c24;
+  --accent-foreground: #edf2ec;
+  --destructive: #ff8573;
+  --border: rgb(242 243 248 / 0.1);
+  --input: rgb(242 243 248 / 0.18);
+  --ring: rgb(129 210 174 / 0.45);
+  --sidebar: #18221c;
+  --sidebar-foreground: #edf2ec;
+  --sidebar-primary: #81d2ae;
+  --sidebar-primary-foreground: #10241a;
+  --sidebar-accent: #202c24;
+  --sidebar-accent-foreground: #edf2ec;
+  --sidebar-border: rgb(237 242 236 / 0.1);
+  --sidebar-ring: rgb(129 210 174 / 0.45);
+
+  --palette-swatch: #81d2ae;
+  --on-accent: #10241a;
+  --tint: #141e18;
+  --panel: #0c1410;
+}
+
+/* ============================================
+   ACCENT COLOURS — one accent, swappable
    ============================================ */
 [data-palette="emerald"] {
-  --primary: oklch(0.52 0.16 152);
-  --primary-foreground: oklch(0.98 0.01 152);
-  --ring: oklch(0.52 0.16 152 / 45%);
-  --accent: oklch(0.93 0.06 152);
-  --accent-foreground: oklch(0.24 0.08 152);
-  --palette-hue: 152;
-  --palette-swatch: oklch(0.62 0.19 152);
+  --palette-swatch: #0f9f72;
+  --on-accent: #ffffff;
 }
-
+.dark[data-palette="default"],
+.dark:not([data-palette]) {
+  --palette-swatch: #81d2ae;
+  --on-accent: #10241a;
+}
 [data-palette="emerald"].dark,
 .dark[data-palette="emerald"] {
-  --primary: oklch(0.78 0.18 152);
-  --primary-foreground: oklch(0.16 0.05 152);
-  --ring: oklch(0.78 0.18 152 / 45%);
-  --accent: oklch(0.26 0.07 152);
-  --accent-foreground: oklch(0.9 0.1 152);
-  --palette-swatch: oklch(0.78 0.18 152);
+  --palette-swatch: #4fdcae;
+  --on-accent: #03241b;
 }
 
-/* ============================================
-   PALETTE: INDIGO → electric violet highlighter
-   ============================================ */
 [data-palette="indigo"] {
-  --primary: oklch(0.47 0.24 275);
-  --primary-foreground: oklch(0.98 0.01 275);
-  --ring: oklch(0.47 0.24 275 / 45%);
-  --accent: oklch(0.93 0.05 275);
-  --accent-foreground: oklch(0.28 0.13 275);
-  --palette-hue: 275;
-  --palette-swatch: oklch(0.58 0.24 275);
+  --palette-swatch: #7c5cff;
+  --on-accent: #ffffff;
 }
-
 [data-palette="indigo"].dark,
 .dark[data-palette="indigo"] {
-  --primary: oklch(0.73 0.2 275);
-  --primary-foreground: oklch(0.18 0.08 275);
-  --ring: oklch(0.73 0.2 275 / 45%);
-  --accent: oklch(0.27 0.1 275);
-  --accent-foreground: oklch(0.92 0.06 275);
-  --palette-swatch: oklch(0.73 0.2 275);
+  --palette-swatch: #a58dff;
+  --on-accent: #150a40;
 }
 
-/* ============================================
-   PALETTE: ROSE → hot signal pink highlighter
-   ============================================ */
 [data-palette="rose"] {
-  --primary: oklch(0.58 0.24 8);
-  --primary-foreground: oklch(0.98 0.01 8);
-  --ring: oklch(0.58 0.24 8 / 45%);
-  --accent: oklch(0.94 0.05 8);
-  --accent-foreground: oklch(0.32 0.14 8);
-  --palette-hue: 8;
-  --palette-swatch: oklch(0.65 0.23 8);
+  --palette-swatch: #e5397f;
+  --on-accent: #ffffff;
 }
-
 [data-palette="rose"].dark,
 .dark[data-palette="rose"] {
-  --primary: oklch(0.76 0.19 8);
-  --primary-foreground: oklch(0.18 0.08 8);
-  --ring: oklch(0.76 0.19 8 / 45%);
-  --accent: oklch(0.28 0.1 8);
-  --accent-foreground: oklch(0.93 0.06 8);
-  --palette-swatch: oklch(0.76 0.19 8);
+  --palette-swatch: #ff78a9;
+  --on-accent: #2c0618;
 }
 
-/* ============================================
-   PALETTE: AMBER → construction-tape amber
-   ============================================ */
 [data-palette="amber"] {
-  --primary: oklch(0.62 0.19 55);
-  --primary-foreground: oklch(0.18 0.05 55);
-  --ring: oklch(0.62 0.19 55 / 45%);
-  --accent: oklch(0.94 0.06 70);
-  --accent-foreground: oklch(0.32 0.1 55);
-  --palette-hue: 55;
-  --palette-swatch: oklch(0.75 0.18 65);
+  --palette-swatch: #f26a1b;
+  --on-accent: #ffffff;
 }
-
 [data-palette="amber"].dark,
 .dark[data-palette="amber"] {
-  --primary: oklch(0.8 0.18 75);
-  --primary-foreground: oklch(0.18 0.05 55);
-  --ring: oklch(0.8 0.18 75 / 45%);
-  --accent: oklch(0.28 0.08 65);
-  --accent-foreground: oklch(0.93 0.08 75);
-  --palette-swatch: oklch(0.8 0.18 75);
+  --palette-swatch: #ff9150;
+  --on-accent: #2a1100;
 }
 
-/* ============================================
-   PALETTE: CYAN → terminal cyan highlighter
-   ============================================ */
 [data-palette="cyan"] {
-  --primary: oklch(0.55 0.14 210);
-  --primary-foreground: oklch(0.98 0.01 210);
-  --ring: oklch(0.55 0.14 210 / 45%);
-  --accent: oklch(0.93 0.05 210);
-  --accent-foreground: oklch(0.28 0.08 210);
-  --palette-hue: 210;
-  --palette-swatch: oklch(0.68 0.15 210);
+  --palette-swatch: #0891b2;
+  --on-accent: #ffffff;
 }
-
 [data-palette="cyan"].dark,
 .dark[data-palette="cyan"] {
-  --primary: oklch(0.78 0.13 210);
-  --primary-foreground: oklch(0.18 0.06 210);
-  --ring: oklch(0.78 0.13 210 / 45%);
-  --accent: oklch(0.27 0.07 210);
-  --accent-foreground: oklch(0.92 0.06 210);
-  --palette-swatch: oklch(0.78 0.13 210);
+  --palette-swatch: #4fd1ee;
+  --on-accent: #04202c;
 }
 
 /* ============================================
@@ -249,125 +197,274 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
     scroll-behavior: smooth;
+    /* How long the original loader covers the page on a first visit */
+    --intro: 5.4s;
+  }
+  html[data-seen] {
+    --intro: 0s;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-size: 1.0625rem;
+    line-height: 1.65;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.03em;
   }
   ::selection {
     background: var(--palette-swatch);
-    color: var(--background);
+    color: var(--on-accent);
+  }
+  section[id] {
+    scroll-margin-top: 5rem;
+  }
+  :focus-visible {
+    outline: 2px solid var(--palette-swatch);
+    outline-offset: 3px;
+    border-radius: 6px;
   }
 }
 
 /* ============================================
-   CUSTOM UTILITIES
+   UTILITIES
    ============================================ */
 @layer utilities {
-  /* Editorial two-tone heading accent — replaces the old soft gradient */
-  .text-gradient {
-    @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(
-      100deg,
-      var(--foreground) 0%,
-      var(--foreground) 45%,
-      var(--palette-swatch) 100%
+  /*
+   * Twisting ribbon of fine lines (public/ribbon-*.svg used as a mask) with a
+   * single-hue gradient drifting through it. The mask stays still; only the
+   * gradient layer slides, so the animation is cheap.
+   */
+  .ribbon {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    -webkit-mask-image: var(--ribbon-url, url("/ribbon-a.svg"));
+    mask-image: var(--ribbon-url, url("/ribbon-a.svg"));
+    -webkit-mask-size: cover;
+    mask-size: cover;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+  }
+  .ribbon::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 300%;
+    background: linear-gradient(
+      90deg,
+      var(--rb-1) 0%,
+      var(--rb-2) 16.66%,
+      var(--rb-3) 33.33%,
+      var(--rb-1) 50%,
+      var(--rb-2) 66.66%,
+      var(--rb-3) 83.33%,
+      var(--rb-1) 100%
     );
+    animation: ribbon-flow 28s linear infinite;
+  }
+  .ribbon-b {
+    --ribbon-url: url("/ribbon-b.svg");
   }
 
-  .text-accent-swatch {
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.72rem 1.3rem;
+    border-radius: 999px;
+    border: 1px solid var(--input);
+    font-weight: 600;
+    font-size: 0.95rem;
+    line-height: 1.2;
+    color: var(--foreground);
+    background: var(--card);
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease,
+      transform 0.2s ease;
+  }
+  .btn:hover {
+    border-color: var(--foreground);
+  }
+  .btn:active {
+    transform: translateY(1px);
+  }
+  .btn-primary {
+    background: var(--foreground);
+    border-color: var(--foreground);
+    color: var(--background);
+  }
+  .btn-primary:hover {
+    background: color-mix(in srgb, var(--foreground) 82%, var(--palette-swatch));
+    border-color: transparent;
+  }
+  .btn-accent {
+    background: var(--palette-swatch);
+    border-color: transparent;
+    color: var(--on-accent);
+  }
+  .btn-accent:hover {
+    background: color-mix(in srgb, var(--palette-swatch) 88%, black);
+    border-color: transparent;
+  }
+
+  /* Calm, warm surfaces with a restrained lift on interactive cards. */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 1.4rem;
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease,
+      border-color 0.3s ease;
+  }
+  .card:not(a.card) {
+    box-shadow: 0 10px 30px -28px rgb(25 49 39 / 0.35);
+  }
+  a.card:hover {
+    transform: translateY(-5px);
+    border-color: color-mix(in srgb, var(--palette-swatch) 45%, var(--border));
+    box-shadow: 0 28px 48px -30px
+      color-mix(in srgb, var(--palette-swatch) 60%, transparent);
+  }
+
+  /* Hero entrance (CSS only). Waits for the loader on a first visit. */
+  .rise {
+    animation: rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(var(--intro, 0s) + var(--d, 0s));
+  }
+
+  /* Original logo: the signature draws itself, then the dot pops in */
+  .signature-path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: sig-draw 1.5s ease-in-out forwards;
+    animation-delay: var(--intro, 0s);
+  }
+  .signature-dot {
+    transform-box: fill-box;
+    transform-origin: center;
+    opacity: 0;
+    transform: scale(0);
+    animation: sig-dot 0.3s ease forwards;
+    animation-delay: calc(var(--intro, 0s) + 1.2s);
+  }
+
+  /* Helpers still used by the blog and travel pages */
+  .marker,
+  .text-gradient {
     color: var(--palette-swatch);
   }
-
-  /* Nav / floating chrome — crisp translucent surface, minimal blur */
   .glass {
-    background: color-mix(in oklch, var(--background) 88%, transparent);
-    backdrop-filter: blur(10px) saturate(140%);
-    -webkit-backdrop-filter: blur(10px) saturate(140%);
-    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--background) 80%, transparent);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border-bottom: 1px solid var(--border);
   }
-
-  /* Content blocks — hairline border, flat surface, no blur-glass look */
   .glass-card {
-    @apply bg-card border rounded-md;
-    border-color: var(--border);
-    transition: border-color 0.25s ease, transform 0.25s ease;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
   }
-
-  .paper-line {
-    border-top: 1px solid var(--border);
-  }
-
   .index-num {
-    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.03em;
   }
-
   .ink-underline {
-    background-image: linear-gradient(var(--palette-swatch), var(--palette-swatch));
-    background-repeat: no-repeat;
-    background-position: 0 100%;
-    background-size: 0% 2px;
-    transition: background-size 0.35s cubic-bezier(0.21, 0.47, 0.32, 0.98);
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 5px;
+    transition: text-decoration-color 0.2s ease;
   }
   .ink-underline:hover {
-    background-size: 100% 2px;
-  }
-
-  .grain {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    opacity: var(--grain-opacity);
-  }
-
-  .bg-dot-grid {
-    background-image: radial-gradient(var(--foreground) 1px, transparent 1px);
-    background-size: 22px 22px;
-  }
-
-  .animate-marquee {
-    animation: marquee 28s linear infinite;
-  }
-  .animate-marquee-slow {
-    animation: marquee 55s linear infinite;
-  }
-  .animate-marquee-reverse {
-    animation: marquee-reverse 32s linear infinite;
-  }
-
-  .mask-fade-x {
-    mask-image: linear-gradient(
-      90deg,
-      transparent 0%,
-      black 8%,
-      black 92%,
-      transparent 100%
-    );
-    -webkit-mask-image: linear-gradient(
-      90deg,
-      transparent 0%,
-      black 8%,
-      black 92%,
-      transparent 100%
-    );
+    text-decoration-color: var(--palette-swatch);
   }
 }
 
-@keyframes marquee {
+@keyframes rise {
   from {
-    transform: translateX(0);
+    opacity: 0;
+    transform: translateY(14px);
   }
+}
+@keyframes ribbon-flow {
   to {
     transform: translateX(-50%);
   }
 }
-
-@keyframes marquee-reverse {
-  from {
-    transform: translateX(-50%);
-  }
+@keyframes sig-draw {
   to {
-    transform: translateX(0);
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes sig-dot {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise,
+  .ribbon::before {
+    animation: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Space game: a planet drawn from its NASA surface map, slowly turning. */
+.planet {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  background-color: #1a1f2e;
+  background-size: 200% 100%;
+  background-repeat: repeat-x;
+  background-position: 0 50%;
+  animation: planet-turn 40s linear infinite;
+}
+/* Sunlit from the upper left, night side to the lower right */
+.planet::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.22), transparent 42%),
+    radial-gradient(circle at 34% 32%, transparent 38%, rgba(0, 0, 0, 0.88) 80%);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+.planet-ring::after {
+  content: "";
+  position: absolute;
+  left: -34%;
+  right: -34%;
+  top: 41%;
+  height: 18%;
+  border-radius: 50%;
+  border: 2px solid rgba(226, 205, 160, 0.75);
+  transform: rotate(-16deg);
+}
+@keyframes planet-turn {
+  to {
+    background-position: -200% 50%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .planet {
+    animation: none;
   }
 }
