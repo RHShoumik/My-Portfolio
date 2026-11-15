@@ -4,9 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Blog — Ragib Hassan Shoumik",
+  title: "Blog",
   description:
-    "Thoughts on frontend architecture, React patterns, and building for the web.",
+    "Notes by Ragib Hassan Shoumik (RHShoumik), a software engineer in Dhaka, on frontend architecture, React patterns, Three.js and building for the web.",
+  alternates: { canonical: "/blog" },
 };
 
 export default function BlogPage() {

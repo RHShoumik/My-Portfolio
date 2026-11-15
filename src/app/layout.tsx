@@ -8,6 +8,14 @@ import { PageLoader } from "@/components/page-loader";
 import { SoundEffects } from "@/components/sound-effects";
 import { SoundToggle } from "@/components/sound-toggle";
 import { siteConfig } from "@/lib/constants";
+import {
+  KEYWORDS,
+  PROFILE_IMAGE,
+  SITE_DESCRIPTION,
+  SITE_TITLE,
+  SITE_URL,
+  siteJsonLd,
+} from "@/lib/seo";
 import "./globals.css";
 import { Analytics } from '@vercel/analytics/next';
 
@@ -39,59 +47,46 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+const googleVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
+
 export const metadata: Metadata = {
   title: {
-    default: `${siteConfig.name} — ${siteConfig.title}`,
-    template: `%s — ${siteConfig.name}`,
+    default: SITE_TITLE,
+    template: `%s · ${siteConfig.name}`,
   },
-  description: siteConfig.description,
-  metadataBase: new URL(siteConfig.url),
-  keywords: [
-    "Ragib Hassan Shoumik",
-    "Ragib Hassan",
-    "Shoumik",
-    "rhshoumik",
-    "RH Shoumik",
-    "Ragib Shoumik",
-    "React",
-    "Next.js",
-    "TypeScript",
-    "Frontend Engineer",
-    "Portfolio",
-    "Web Developer",
-    "Tailwind CSS",
-    "JavaScript Developer",
-    "Full Stack Developer",
-    "rhshoumik.dev",
-    "Bangladesh Developer",
-    "React Developer Bangladesh",
-  ],
-  authors: [{ name: siteConfig.name, url: siteConfig.url }],
+  description: SITE_DESCRIPTION,
+  applicationName: "RHShoumik",
+  metadataBase: new URL(SITE_URL),
+  keywords: KEYWORDS,
+  authors: [{ name: siteConfig.name, url: SITE_URL }],
   creator: siteConfig.name,
-  alternates: {
-    canonical: siteConfig.url,
-  },
+  publisher: siteConfig.name,
+  category: "technology",
   openGraph: {
-    type: "website",
+    type: "profile",
+    firstName: "Ragib Hassan",
+    lastName: "Shoumik",
+    username: "rhshoumik",
     locale: "en_US",
-    url: siteConfig.url,
-    title: `${siteConfig.name} — ${siteConfig.title}`,
-    description: siteConfig.description,
+    url: SITE_URL,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
     siteName: siteConfig.name,
     images: [
       {
-        url: `${siteConfig.url}/api/og`,
+        url: "/api/og",
         width: 1200,
         height: 630,
-        alt: siteConfig.name,
+        alt: PROFILE_IMAGE.alt,
       },
+      PROFILE_IMAGE,
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: `${siteConfig.name} — ${siteConfig.title}`,
-    description: siteConfig.description,
-    images: [`${siteConfig.url}/api/og`],
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: ["/api/og"],
     creator: "@rhshoumik",
     site: "@rhshoumik",
   },
@@ -106,6 +101,7 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  ...(googleVerification ? { verification: { google: googleVerification } } : {}),
 };
 
 export default function RootLayout({
@@ -124,22 +120,7 @@ export default function RootLayout({
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Person",
-              name: "Ragib Hassan Shoumik",
-              alternateName: ["Ragib Hassan", "Shoumik", "rhshoumik", "RH Shoumik"],
-              url: siteConfig.url,
-              jobTitle: "Frontend Engineer",
-              description:
-                "Senior Frontend Engineer specializing in React, Next.js, and TypeScript.",
-              sameAs: [
-                siteConfig.links.github,
-                siteConfig.links.linkedin,
-              ],
-            }),
-          }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd()) }}
         />
       </head>
       <body

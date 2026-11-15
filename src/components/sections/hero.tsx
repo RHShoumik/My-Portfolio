@@ -27,15 +27,16 @@ export function HeroSection() {
 
       <div className="mx-auto grid max-w-7xl items-center gap-14 px-5 md:px-8 lg:grid-cols-12 lg:gap-12">
         <div className="lg:col-span-7">
-          <p
+          {/* The name is the page's main heading, which is what Google reads first. */}
+          <h1
             className="rise inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-foreground/55"
             style={delay(0.05)}
           >
             <span className="size-2 rounded-full bg-[var(--palette-swatch)] shadow-[0_0_0_4px_color-mix(in_srgb,var(--palette-swatch)_14%,transparent)]" />
-            Ragib Hassan Shoumik · Frontend engineer
-          </p>
+            Ragib Hassan Shoumik · Software engineer
+          </h1>
 
-          <h1
+          <p
             className="rise mt-7 max-w-3xl font-display text-[3.5rem] font-semibold leading-[0.96] tracking-[-0.065em] sm:text-7xl lg:text-[6.2rem]"
             style={delay(0.12)}
           >
@@ -43,15 +44,16 @@ export function HeroSection() {
             <span className="mt-2 block text-[var(--palette-swatch)]">
               Human feeling.
             </span>
-          </h1>
+          </p>
 
           <p
             className="rise mt-7 max-w-2xl text-lg leading-relaxed text-foreground/70 md:text-xl"
             style={delay(0.2)}
           >
-            I&apos;m a frontend engineer in Dhaka building clear, dependable web
-            experiences with React, Next.js, and TypeScript. I care about the
-            small details that make complex products feel simple.
+            I&apos;m Ragib Hassan Shoumik (RHShoumik), a software engineer in
+            Dhaka, Bangladesh, building clear, dependable web apps and 3D
+            experiences with React, Next.js, TypeScript and Three.js. I care
+            about the small details that make complex products feel simple.
           </p>
 
           <div
@@ -101,7 +103,7 @@ export function HeroSection() {
           <figure className="relative overflow-hidden rounded-[2rem_2rem_2rem_7rem] border border-foreground/10 bg-card shadow-[0_32px_80px_-42px_rgba(23,37,31,0.42)]">
             <Image
               src="/images/hero-photo.jpg"
-              alt="Ragib Hassan Shoumik outdoors in the mountains"
+              alt="Ragib Hassan Shoumik (RHShoumik), software engineer in Dhaka, Bangladesh"
               width={700}
               height={850}
               priority

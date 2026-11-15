@@ -4,6 +4,8 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { articleJsonLd } from "@/lib/seo";
+import { markdownToHtml } from "@/lib/markdown";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -20,7 +22,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!post) return {};
 
   return {
-    title: `${post.title} — Ragib Hassan Shoumik`,
+    title: post.title,
+    alternates: { canonical: `/blog/${slug}` },
     description: post.description,
     openGraph: {
       title: post.title,
@@ -44,6 +47,19 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <main className="min-h-screen pt-28 pb-24 md:pt-36">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            articleJsonLd({
+              title: post.title,
+              description: post.description,
+              date: post.date,
+              url: `https://rhshoumik.dev/blog/${slug}`,
+            }),
+          ),
+        }}
+      />
       <article className="mx-auto max-w-3xl px-5 md:px-8">
         <Link
           href="/blog"
@@ -81,27 +97,4 @@ export default async function BlogPostPage({ params }: Props) {
       </article>
     </main>
   );
-}
-
-/**
- * Simple markdown-to-HTML converter for static blog rendering.
- * For a full MDX pipeline, integrate @next/mdx or mdx-bundler.
- */
-function markdownToHtml(md: string): string {
-  return md
-    .replace(/^### (.*$)/gm, '<h3>$1</h3>')
-    .replace(/^## (.*$)/gm, '<h2>$1</h2>')
-    .replace(/^# (.*$)/gm, '<h1>$1</h1>')
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
-    .replace(/^\- (.*$)/gm, '<li>$1</li>')
-    .replace(/(<li>[\s\S]*<\/li>)/, '<ul>$1</ul>')
-    .replace(/^\d+\. (.*$)/gm, '<li>$1</li>')
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/^(.+)$/gm, (match) => {
-      if (match.startsWith('<')) return match;
-      return match;
-    });
 }

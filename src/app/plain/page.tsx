@@ -11,6 +11,8 @@ export const metadata: Metadata = {
   title: "Portfolio",
   description:
     "Explore Ragib Hassan Shoumik's work, experience, skills, and travel stories.",
+  // Same content as the home page, so point Google at that one.
+  alternates: { canonical: "/" },
 };
 
 export default function PlainPortfolio() {

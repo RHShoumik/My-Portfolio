@@ -1,0 +1,89 @@
+---
+title: "How I Built a 3D Space Game Portfolio with Three.js"
+description: "Ragib Hassan Shoumik, a software engineer in Dhaka, Bangladesh, on turning his portfolio into a playable Three.js space game: flight, landings, a rigged astronaut and low gravity."
+date: "2026-11-15"
+tags: ["threejs", "react-three-fiber", "webgl", "nextjs", "game-dev"]
+published: true
+---
+
+# How I Built a 3D Space Game Portfolio with Three.js
+
+I'm Ragib Hassan Shoumik (most people online know me as RHShoumik), a software engineer in Dhaka, Bangladesh. For years my portfolio was a normal scrolling page. It worked, but nobody remembered it. So I rebuilt it as a game. You fly a jet from Earth to Mars, Europa, Titan and back, land on each world, step out as an astronaut and walk up to the things I've built.
+
+You can [play it here](/space). This post is about how it works, and about what I learned building a real 3D experience with Three.js inside a Next.js site.
+
+## The stack
+
+- **Next.js 16** for the site. The game lives at `/space`, and the regular portfolio stays at [the home page](/) for anyone who just wants to read.
+- **Three.js** through **React Three Fiber**, so the scene is made of React components.
+- **Zustand** for game state: the current level, the phase (flying, landing, on foot, taking off) and what you've visited.
+- Plain **TypeScript** for physics. No physics engine, just a few honest formulas.
+
+Keeping the game in its own route matters. Three.js is heavy, so the 3D code only loads when someone opens `/space`. The main site stays fast and easy for Google to read.
+
+## Four levels, four sections
+
+Each level is one part of my portfolio, and each landing site has its own sky, ground colour, fog and gravity:
+
+1. **Earth → Mars:** skills. Mars has 3.7 m/s² gravity, so every step is a long, slow bound.
+2. **Mars → Jupiter, landing on Europa:** work experience, under a huge Jupiter hanging in the sky.
+3. **Jupiter → Saturn, landing on Titan:** projects, under Saturn and its rings.
+4. **Saturn → Earth:** my [travel stories](/travel). You come home through real clouds and land on green fields.
+
+All of this is data. A level is one object with its planet texture, its site palette, how many enemies to send and what to show on the ground. Adding a level means adding an entry, not writing a new scene.
+
+## Landing on the sand
+
+My first version landed on a big runway. It looked wrong: a perfect strip of concrete on Mars filled half the screen. Now the jet glides in, touches down on levelled sand, brakes, kicks up dust and rolls onto a small landing pad. The camera cuts between shots like a film: a wide descent, a long lens beside the touchdown point, a chase cam on the roll-out and a slow orbit once it stops.
+
+The trick is to treat the landing as a timeline, not as physics. One clock runs from 0 to the end, and every position, camera angle and caption is a function of that clock. That makes it smooth and easy to tune, and the Skip button simply jumps to the end.
+
+## Rigging an astronaut at runtime
+
+When you land you climb out as an astronaut. The model I used was a static mesh with no skeleton, so it couldn't walk. Instead of rigging it in Blender, I rig it in the browser when it loads:
+
+1. Place bones at the joints: pelvis, spine, hips, knees and shoulders.
+2. For every vertex, work out which body part it belongs to from its position, and blend the weights smoothly near the joints so knees bend instead of tearing.
+3. Turn each mesh into a `SkinnedMesh` and bind it to the new skeleton.
+
+```ts
+// Simplified: how much a vertex follows the knee instead of the hip
+const t = smoothstep(KNEE_Y + 0.04, KNEE_Y - 0.04, vertex.y);
+weights[i] = [1 - t, t]; // [thigh bone, shin bone]
+```
+
+The walk is procedural, not a canned animation. The walk cycle moves forward by the distance you actually travelled, so feet don't slide. Knees bend on the forward swing, and when gravity is low the stride turns into the floaty lope you've seen in Moon landing videos.
+
+One small detail I care about: the suit had a US flag on the left arm. I replaced it with the Bangladesh flag, drawn as a decal on the shoulder.
+
+## Walk up to it, no clicking
+
+On the ground, each part of my portfolio is an object: skill crystals on Mars, career outposts on Europa, project monoliths on Titan and photo beacons on Earth. Walk close and a card opens on its own with the details. Walk away and it closes. There's a bit of distance between the open and close points, so cards don't flicker when you stand at the edge.
+
+When you're done, walk back to the jet and board it. It spools up, rolls, rotates and climbs out to the next planet.
+
+## Making movement feel real
+
+Most of the "realism" comes from a few small rules:
+
+- **Momentum.** Speed builds up and slows down instead of changing instantly.
+- **Turn rate.** The astronaut can't spin around on the spot.
+- **Wall sliding.** Bumping into the jet slides you along it instead of stopping you dead.
+- **Per-world gravity.** Jumps on Europa feel completely different from jumps on Earth.
+
+None of these needed a physics engine. Each one is a few lines.
+
+## Performance on phones
+
+The game has to work on a mid-range Android phone over Bangladeshi mobile data, not just on my laptop. What helped most:
+
+- Load 3D code only on `/space`, behind a loader.
+- Keep model files small, and reuse geometry and materials.
+- Let the shadow camera follow the player instead of covering the whole map.
+- Use touch controls with drag-to-steer on phones, and bottom sheets instead of side panels for the cards.
+
+## What I'd tell another engineer
+
+If you're a frontend developer thinking about Three.js, start with one small scene inside the site you already have. React Three Fiber means everything you know about components and state still applies. The hard parts aren't the 3D maths. They're the feel: camera timing, easing and the moment a card appears.
+
+I'm a software engineer based in Dhaka, working on React, Next.js and Three.js projects, currently at JustGo. If you're building something interactive in 3D and want to talk, [get in touch](/#contact), or read [more posts on the blog](/blog).
