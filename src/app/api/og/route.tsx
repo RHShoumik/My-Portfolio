@@ -8,9 +8,9 @@ export async function GET(req: NextRequest) {
   const title = searchParams.get("title") ?? "Ragib Hassan Shoumik";
   const description =
     searchParams.get("description") ??
-    "Frontend Engineer | React & Next.js Specialist";
+    "Software engineer in Dhaka, Bangladesh · React, Next.js & Three.js";
 
-  const photoUrl = `${origin}/images/about-photo.jpeg`;
+  const photoUrl = `${origin}/images/ragib-hassan-shoumik.jpg`;
 
   return new ImageResponse(
     (

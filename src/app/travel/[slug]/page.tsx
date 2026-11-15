@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, MapPin, Route, Calendar } from "lucide-react";
 import type { Metadata } from "next";
+import { articleJsonLd } from "@/lib/seo";
 import { TravelContent } from "@/components/travel/travel-content";
 
 interface Props {
@@ -21,7 +22,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!post) return {};
 
   return {
-    title: `${post.title} — Travel — Ragib Hassan Shoumik`,
+    title: `${post.title} · Travel`,
+    alternates: { canonical: `/travel/${slug}` },
     description: post.description,
     openGraph: {
       title: post.title,
@@ -46,6 +48,20 @@ export default async function TravelPostPage({ params }: Props) {
 
   return (
     <main className="min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            articleJsonLd({
+              title: post.title,
+              description: post.description,
+              date: post.date,
+              url: `https://rhshoumik.dev/travel/${slug}`,
+              image: post.cover,
+            }),
+          ),
+        }}
+      />
       {/* Cinematic Hero */}
       <section className="relative h-[70vh] min-h-[500px] w-full overflow-hidden">
         {/* Cover Image */}

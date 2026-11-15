@@ -1,8 +1,8 @@
 export const siteConfig = {
   name: "Ragib Hassan Shoumik",
-  title: "Frontend Engineer | React & Next.js Specialist",
+  title: "Software Engineer in Dhaka, Bangladesh",
   description:
-    "Ragib Hassan Shoumik (RHShoumik) —  Frontend Engineer with 4+ years of experience building scalable web applications with React, Next.js, and TypeScript. Specializing in e-commerce platforms, SaaS products, and modern UI architectures.",
+    "Ragib Hassan Shoumik (RHShoumik) is a software engineer in Dhaka, Bangladesh, building fast web apps and 3D experiences with React, Next.js and Three.js.",
   url: "https://rhshoumik.dev",
   ogImage: "https://rhshoumik.dev/og.png",
   links: {

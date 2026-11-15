@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getAllPosts } from "@/lib/blog";
 import { getAllTravelPosts } from "@/lib/travel";
+import { PROFILE_IMAGE } from "@/lib/seo";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://rhshoumik.dev";
@@ -25,6 +26,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 1,
+      images: [PROFILE_IMAGE.url],
     },
     {
       url: `${baseUrl}/space`,

@@ -3,8 +3,10 @@ import type { Metadata } from "next";
 import { SpaceLoader } from "@/components/space/space-loader";
 
 export const metadata: Metadata = {
-  title: "Space game",
-  description: "Fly a spaceplane from Earth to Mars to explore Ragib Hassan Shoumik's portfolio.",
+  title: "Space game · 3D Three.js portfolio",
+  description:
+    "Fly a jet from Earth to Mars, Europa, Titan and back, then explore Ragib Hassan Shoumik's skills, experience, projects and travel on foot. Built with Three.js.",
+  alternates: { canonical: "/space" },
 };
 
 export default function SpacePage() {
