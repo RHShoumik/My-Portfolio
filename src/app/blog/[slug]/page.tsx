@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: post.description,
       type: "article",
       publishedTime: post.date,
-      url: `https://rhshoumik.dev/blog/${slug}`,
+      url: `https://www.rhshoumik.dev/blog/${slug}`,
     },
     twitter: {
       card: "summary_large_image",
@@ -55,7 +55,7 @@ export default async function BlogPostPage({ params }: Props) {
               title: post.title,
               description: post.description,
               date: post.date,
-              url: `https://rhshoumik.dev/blog/${slug}`,
+              url: `https://www.rhshoumik.dev/blog/${slug}`,
             }),
           ),
         }}

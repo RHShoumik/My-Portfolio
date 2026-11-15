@@ -4,7 +4,7 @@ import { getAllTravelPosts } from "@/lib/travel";
 import { PROFILE_IMAGE } from "@/lib/seo";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://rhshoumik.dev";
+  const baseUrl = "https://www.rhshoumik.dev";
 
   const blogPosts = getAllPosts().map((post) => ({
     url: `${baseUrl}/blog/${post.slug}`,

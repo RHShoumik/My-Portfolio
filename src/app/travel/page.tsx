@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     title: "Travel — Ragib Hassan Shoumik",
     description:
       "Beyond code — the roads that shaped me. An interactive map and stories from the places I have explored.",
-    url: "https://rhshoumik.dev/travel",
+    url: "https://www.rhshoumik.dev/travel",
   },
   alternates: { canonical: "/travel" },
 };
