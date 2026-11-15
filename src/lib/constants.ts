@@ -3,8 +3,8 @@ export const siteConfig = {
   title: "Software Engineer in Dhaka, Bangladesh",
   description:
     "Ragib Hassan Shoumik (RHShoumik) is a software engineer in Dhaka, Bangladesh, building fast web apps and 3D experiences with React, Next.js and Three.js.",
-  url: "https://rhshoumik.dev",
-  ogImage: "https://rhshoumik.dev/og.png",
+  url: "https://www.rhshoumik.dev",
+  ogImage: "https://www.rhshoumik.dev/og.png",
   links: {
     github: "https://github.com/rhshoumik",
     linkedin: "https://www.linkedin.com/in/ragib-hassan/",

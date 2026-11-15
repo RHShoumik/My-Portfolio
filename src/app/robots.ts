@@ -10,7 +10,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/api/contact"],
       },
     ],
-    sitemap: "https://rhshoumik.dev/sitemap.xml",
-    host: "https://rhshoumik.dev",
+    sitemap: "https://www.rhshoumik.dev/sitemap.xml",
+    host: "https://www.rhshoumik.dev",
   };
 }

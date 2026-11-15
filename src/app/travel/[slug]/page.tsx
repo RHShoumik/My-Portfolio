@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: post.description,
       type: "article",
       publishedTime: post.date,
-      url: `https://rhshoumik.dev/travel/${slug}`,
+      url: `https://www.rhshoumik.dev/travel/${slug}`,
       images: post.cover ? [{ url: post.cover }] : undefined,
     },
     twitter: {
@@ -56,7 +56,7 @@ export default async function TravelPostPage({ params }: Props) {
               title: post.title,
               description: post.description,
               date: post.date,
-              url: `https://rhshoumik.dev/travel/${slug}`,
+              url: `https://www.rhshoumik.dev/travel/${slug}`,
               image: post.cover,
             }),
           ),
