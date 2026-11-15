@@ -211,27 +211,12 @@ function EntryPlasma() {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Landing gear                                                       */
-/* ------------------------------------------------------------------ */
-
-function Gear({ position, length }: { position: [number, number, number]; length: number }) {
-  return (
-    <group position={position}>
-      <mesh position={[0, -length / 2, 0]}>
-        <cylinderGeometry args={[0.05, 0.05, length, 8]} />
-        <meshStandardMaterial color="#9aa1ad" metalness={0.8} roughness={0.35} />
-      </mesh>
-      <mesh position={[0, -length, 0]}>
-        <cylinderGeometry args={[0.2, 0.24, 0.08, 16]} />
-        <meshStandardMaterial color="#2a2f38" metalness={0.5} roughness={0.6} />
-      </mesh>
-    </group>
-  );
-}
-
-/** Height from the ship's origin down to the bottom of the deployed landing pads. */
-export const GEAR_HEIGHT = 1.14 * AIRCRAFT_SCALE;
+/**
+ * Height from the ship's origin down to the bottom of the F-14's own wheels.
+ * The model is centred on its bounding box, and its wheels are its lowest
+ * point: half its fitted height (0.926) below the centre.
+ */
+export const GEAR_HEIGHT = 0.926 * AIRCRAFT_SCALE;
 
 /** Load the supplied F-14 model, center it, and fit it to the existing flight scale. */
 function PlaneModel() {
@@ -272,7 +257,6 @@ function PlaneModel() {
 
 export function Ship() {
   const root = useRef<THREE.Group>(null);
-  const gear = useRef<THREE.Group>(null);
   const strobe = useRef<THREE.Sprite>(null);
   const navLeft = useRef<THREE.Sprite>(null);
   const navRight = useRef<THREE.Sprite>(null);
@@ -296,11 +280,6 @@ export function Ship() {
 
   useFrame((state, frameDt) => {
     const t = state.clock.elapsedTime;
-    const gearAmount = rocketLive.gear;
-    if (gear.current) {
-      gear.current.visible = gearAmount > 0.02;
-      gear.current.scale.set(1, Math.max(0.02, gearAmount), 1);
-    }
     if (engineLight.current) engineLight.current.intensity = rocketLive.throttle * 30;
 
     const blink = (t % 1.4) < 0.08 ? 1 : 0;
@@ -335,12 +314,6 @@ export function Ship() {
     <group ref={root}>
       <group scale={AIRCRAFT_SCALE}>
         <PlaneModel />
-
-        <group ref={gear} visible={false}>
-          <Gear position={[0, -0.55, -2.45]} length={0.55} />
-          <Gear position={[-0.95, -0.42, 1.55]} length={0.65} />
-          <Gear position={[0.95, -0.42, 1.55]} length={0.65} />
-        </group>
 
         {/* F-14 twin-engine exhaust and responsive navigation lights. */}
         <Flame x={-0.46} z={3.55} />

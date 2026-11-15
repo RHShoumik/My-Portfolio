@@ -7,10 +7,11 @@ import * as THREE from "three";
 import { playSound, setRocket } from "@/lib/sound";
 import * as combatState from "./combat";
 import { resetCombat, updateCombat } from "./combat";
-import { DESCENT, PAD_TOP } from "./mars-surface";
+import { DESCENT, PAD_RADIUS, PAD_TOP, ROLL_DIST, RUNWAY_DIR, RUNWAY_SIDE } from "./mars-surface";
 import { GEAR_HEIGHT, Ship } from "./ship";
-import { fadeEl, input, rocketLive, useSpace } from "./store";
-import { CORRIDOR, MARS, rocks, TRACK } from "./world";
+import { landingBody, LEVELS } from "./levels";
+import { currentLevel, fadeEl, input, rocketLive, shadowFocus, useSpace } from "./store";
+import { CORRIDOR, landingPos, rocks, TRACK } from "./world";
 
 const CRUISE = 72;
 const BOOST = 118;
@@ -21,18 +22,33 @@ const T_CUT_ENTRY = 2.3; // cut to the close entry shot
 const T_FADE_IN = 3.7; // haze starts to cover the screen
 const T_SWITCH = 4.6; // fully hazed: swap space for the Martian sky
 const T_FADE_OUT = 6.2;
-const GLIDE = 7.0; // seconds along the descent path
-const HOVER = 2.4; // seconds of vertical hover down onto the pad
-const SETTLE = 2.2; // seconds on the pad before the panel opens
-const TOUCHDOWN = GLIDE + HOVER;
+const GLIDE = 9.0; // seconds along the approach, down to the wheels touching
+const ROLL = 5.5; // seconds braking down the runway to a stop
+const SETTLE = 1.6; // seconds stopped before the pilot climbs out
+const TOUCHDOWN = GLIDE + ROLL; // (stopped)
+/** Touchdown speed, m/s: fast enough to look like a jet, slow enough to stop in ROLL_DIST. */
+const TOUCHDOWN_SPEED = (2 * ROLL_DIST) / ROLL;
+/**
+ * Progress along the approach for a time fraction x: fast at first, easing to
+ * exactly the touchdown speed at the end (a blend of linear and ease-out).
+ */
+const GLIDE_LINEAR = Math.min(0.9, (TOUCHDOWN_SPEED * GLIDE) / DESCENT.getLength());
+const glideAt = (x: number) => GLIDE_LINEAR * x + (1 - GLIDE_LINEAR) * (1 - (1 - x) * (1 - x));
+
+/* Take-off timeline, in seconds from climbing aboard. */
+const TO_SPOOL = 1.6; // engines winding up on the pad
+const TO_ACCEL = 15; // m/s² down the sand
+const TO_ROTATE = 62; // m/s: lift the nose
+const TO_LIFTOFF = 74; // m/s: start climbing
+const TO_END = 11.5; // fully hazed: on to the next planet
 
 const PARKED = new THREE.Vector3(0, PAD_TOP + GEAR_HEIGHT, 0);
-const PARK_DIR = DESCENT.getTangentAt(1).setY(0).normalize();
+const PARK_DIR = RUNWAY_DIR.clone();
 const UP = new THREE.Vector3(0, 1, 0);
 const ZERO = new THREE.Vector3();
 const ROLL_AXIS = new THREE.Vector3(0, 0, 1);
 /** Camera shots that start with a hard cut instead of a smooth move. */
-const CUT_SHOTS = new Set(["approach", "entry", "descent", "final", "touchdown", "parked"]);
+const CUT_SHOTS = new Set(["approach", "entry", "descent", "final", "rollout", "touchdown", "parked"]);
 
 const clamp = THREE.MathUtils.clamp;
 const smooth = THREE.MathUtils.smoothstep;
@@ -85,6 +101,14 @@ export function Flight() {
     roll: 0,
     fade: 0,
     orbit: 0,
+    /** Take-off: seconds since boarding, distance along the strip, height, speed, climb angle, nose-up, liftoff time. */
+    toT: 0,
+    ta: 0,
+    ty: 0,
+    tv: 0,
+    tg: 0,
+    tpitch: 0,
+    liftAt: -1,
     /** Dev only: freeze the landing clock to inspect a moment of the cinematic. */
     hold: false,
   });
@@ -101,6 +125,8 @@ export function Flight() {
       q2: new THREE.Quaternion(),
       m: new THREE.Matrix4(),
       park: new THREE.Quaternion(),
+      /** Centre of the world you land on, for this level. */
+      body: new THREE.Vector3(),
     }),
     []
   );
@@ -109,6 +135,8 @@ export function Flight() {
   useEffect(
     () =>
       useSpace.subscribe((st, prev) => {
+        // A new level: lay out its rocks, mines and enemies straight away.
+        if (st.level !== prev.level) resetCombat();
         if (st.phase === prev.phase) return;
         const p = s.current;
         if (st.phase === "ready") {
@@ -131,15 +159,22 @@ export function Flight() {
           p.caption = -1;
           v.start.set(p.x, p.y, p.z);
           v.ctrl.copy(v.start).add(v.tmp.set(0, 0, -110));
+          const level = currentLevel();
+          v.body.copy(landingPos(level));
           v.entry
             .copy(v.start)
-            .sub(MARS.pos)
+            .sub(v.body)
             .add(v.tmp.set(0, 150, 0))
             .normalize()
-            .multiplyScalar(MARS.r * 1.005)
-            .add(MARS.pos);
+            .multiplyScalar(landingBody(level).r * 1.005)
+            .add(v.body);
         }
-        if (st.phase === "arrived") {
+        if (st.phase === "takeoff") {
+          Object.assign(p, { toT: 0, ta: 0, ty: 0, tv: 0, tg: 0, tpitch: 0, liftAt: -1, caption: -1 });
+          ship.current?.quaternion.copy(v.park);
+          playSound("whoosh");
+        }
+        if (st.phase === "arrived" || st.phase === "eva") {
           playSound("send");
           Object.assign(rocketLive, { throttle: 0, heat: 0, gear: 1, hover: 0 });
           p.fade = 0;
@@ -183,6 +218,151 @@ export function Flight() {
     let shot = phase as string;
     let fov = 56;
     let fade = 0;
+
+    /* ================= On foot: the ship waits on the pad, the astronaut has the camera ================= */
+    if (phase === "eva") {
+      Object.assign(rocketLive, { throttle: 0, heat: 0, gear: 1, speed: 0, skid: 0 });
+      rocketLive.hover = Math.max(0, rocketLive.hover - dt);
+      rocketLive.pos.copy(PARKED);
+      if (obj) {
+        obj.visible = true;
+        obj.position.copy(PARKED);
+        obj.quaternion.slerp(v.park, 1 - Math.exp(-dt * 3));
+      }
+      if (p.fade !== 0) {
+        p.fade = 0;
+        if (fadeEl.current) fadeEl.current.style.opacity = "0";
+      }
+      if (t - p.lastSound > 0.08) {
+        p.lastSound = t;
+        setRocket(0);
+      }
+      // Cut back to a flight shot when you take off again.
+      p.shot = "eva";
+      p.camReady = false;
+      return;
+    }
+
+    /* ================= Take-off: spool up, run across the sand, rotate, climb away ================= */
+    if (phase === "takeoff") {
+      if (!p.hold) p.toT += dt;
+      const u = p.toT;
+      const level = currentLevel();
+      const next = LEVELS[level.number];
+      const r = rocketLive.pos;
+
+      if (u > TO_SPOOL && !p.hold) {
+        p.tv += (p.tv < 95 ? TO_ACCEL : 9) * dt;
+        if (p.tv > TO_ROTATE) p.tpitch = Math.min(0.13, p.tpitch + dt * 0.16);
+        if (p.tv > TO_LIFTOFF) p.tg = Math.min(0.36, p.tg + dt * 0.2);
+        p.ta += p.tv * Math.cos(p.tg) * dt;
+        p.ty += p.tv * Math.sin(p.tg) * dt;
+        if (p.liftAt < 0 && p.ty > 0.3) {
+          p.liftAt = u;
+          playSound("whoosh");
+        }
+      }
+      const onPad = 1 - smooth(Math.abs(p.ta), PAD_RADIUS - 1, PAD_RADIUS + 3);
+      const ground = GEAR_HEIGHT + PAD_TOP * onPad;
+      r.copy(RUNWAY_DIR).multiplyScalar(p.ta);
+      r.y = ground + p.ty;
+      const pitch = p.tpitch + p.tg;
+      v.dir.copy(RUNWAY_DIR).multiplyScalar(Math.cos(pitch)).setY(Math.sin(pitch));
+      if (obj) {
+        aim(v.q, v.dir, 0, v.m, v.q2);
+        obj.quaternion.slerp(v.q, 1 - Math.exp(-dt * 6));
+        obj.position.copy(r);
+        obj.visible = true;
+      }
+
+      // Engines to full power; the blast throws sand off the pad until you're airborne.
+      rocketLive.throttle += (Math.min(1, u / TO_SPOOL) - rocketLive.throttle) * Math.min(1, dt * 3);
+      rocketLive.skid = p.ty < 2 ? 0.45 + 0.4 * Math.min(1, p.tv / 60) : 0;
+      rocketLive.gear = p.liftAt < 0 ? 1 : 1 - smooth(u, p.liftAt + 0.8, p.liftAt + 2.2);
+      rocketLive.hover = 0;
+      if (p.ty < 1) rocketLive.shake = Math.max(rocketLive.shake, 0.05 + 0.08 * Math.min(1, p.tv / 70));
+      const fadeNow = smooth(u, TO_END - 1.4, TO_END);
+      if (Math.abs(fadeNow - p.fade) > 0.004) {
+        p.fade = fadeNow;
+        if (fadeEl.current) fadeEl.current.style.opacity = fadeNow.toFixed(3);
+      }
+      if (u >= TO_END) game.depart();
+
+      // Shots
+      let toShot = "spool";
+      let toFov = 52;
+      let toFollow = 50;
+      if (u < TO_SPOOL + 1.4) {
+        cam.wantPos.copy(PARKED).addScaledVector(RUNWAY_DIR, -16 * far).addScaledVector(RUNWAY_SIDE, 9 * far).setY(PAD_TOP + 2.4);
+        cam.wantLook.copy(r).add(v.tmp.set(0, 0.6, 0));
+      } else if (u < TO_SPOOL + 4.1) {
+        toShot = "roll";
+        cam.wantPos.copy(r).addScaledVector(RUNWAY_DIR, -20 * far).addScaledVector(RUNWAY_SIDE, 6.5 * far).setY(ground + 2.4);
+        cam.wantLook.copy(r).addScaledVector(RUNWAY_DIR, 14);
+        toFollow = 7;
+      } else if (u < TO_SPOOL + 7.2) {
+        // Beside the strip ahead of the liftoff point: the jet thunders past and climbs away.
+        toShot = "liftoff";
+        cam.wantPos.copy(RUNWAY_DIR).multiplyScalar(250).addScaledVector(RUNWAY_SIDE, -28 * far).setY(2.6);
+        cam.wantLook.copy(r);
+        const dist = Math.max(1, cam.wantPos.distanceTo(r));
+        toFov = clamp(THREE.MathUtils.radToDeg(2 * Math.atan(15 / dist)), 12, 52);
+      } else {
+        toShot = "climb";
+        cam.wantPos.copy(r).addScaledVector(v.dir, -30).add(v.tmp.set(0, 5, 0));
+        cam.wantLook.copy(r).addScaledVector(v.dir, 40);
+        toFollow = 4;
+      }
+
+      const captions: [number, string][] = [
+        [0, "Canopy closed · engines to full power"],
+        [TO_SPOOL + 0.3, "Brakes off"],
+        [TO_SPOOL + 3.6, "Rotate"],
+        [TO_SPOOL + 5.0, "Liftoff · gear up"],
+        [TO_SPOOL + 7.2, next ? `Climbing out · next stop ${next.to}` : "Climbing out · back to the launch line"],
+      ];
+      let c = -1;
+      for (let i = 0; i < captions.length; i++) if (u >= captions[i][0]) c = i;
+      if (c !== p.caption) {
+        p.caption = c;
+        game.setCaption(c >= 0 ? captions[c][1] : null);
+      }
+
+      // Engine sound
+      if (t - p.lastSound > 0.08) {
+        p.lastSound = t;
+        setRocket(rocketLive.throttle);
+      }
+      shadowFocus.copy(r);
+
+      // Camera (cuts between shots, like the landing)
+      if (toShot !== p.shot) {
+        p.camReady = false;
+        p.shot = toShot;
+      }
+      if (!p.camReady) {
+        cam.pos.copy(cam.wantPos);
+        cam.look.copy(cam.wantLook);
+        camera.fov = toFov;
+        camera.updateProjectionMatrix();
+        p.camReady = true;
+      }
+      cam.pos.lerp(cam.wantPos, 1 - Math.exp(-dt * toFollow));
+      cam.look.lerp(cam.wantLook, 1 - Math.exp(-dt * Math.min(toFollow * 1.6, 12)));
+      camera.position.copy(cam.pos);
+      if (rocketLive.shake > 0) {
+        const k = rocketLive.shake;
+        camera.position.x += (Math.random() - 0.5) * k * 1.4;
+        camera.position.y += (Math.random() - 0.5) * k * 1.4;
+        rocketLive.shake = Math.max(0, k - dt);
+      }
+      camera.lookAt(cam.look);
+      if (Math.abs(camera.fov - toFov) > 0.05) {
+        camera.fov += (toFov - camera.fov) * Math.min(1, dt * 8);
+        camera.updateProjectionMatrix();
+      }
+      return;
+    }
 
     /* ================= Free flight ================= */
     if (phase === "flying" && p.hold) {
@@ -265,7 +445,7 @@ export function Flight() {
         if (L < T_CUT_ENTRY) {
           shot = "approach";
           cam.wantPos.copy(r).add(v.tmp.set(-34 * far, 12 * far, 40 * far));
-          cam.wantLook.lerpVectors(r, MARS.pos, 0.3);
+          cam.wantLook.lerpVectors(r, v.body, 0.3);
           follow = 2;
         } else {
           shot = "entry";
@@ -274,40 +454,69 @@ export function Flight() {
           follow = 6;
         }
       } else {
-        // --- Mars: descent through the clouds onto the pad ---
+        // --- On the surface: approach, flare, touchdown on the sand, roll-out onto the pad ---
         if (game.scene !== "surface") game.setScene("surface");
         const u = L - T_SWITCH;
+        rocketLive.hover = 0;
         if (u < GLIDE) {
-          const sPath = 1 - Math.pow(1 - u / GLIDE, 2.2);
+          const sPath = Math.min(1, glideAt(u / GLIDE));
           DESCENT.getPointAt(sPath, r);
-          DESCENT.getTangentAt(Math.min(sPath, 0.995), v.dir);
+          DESCENT.getTangentAt(Math.min(sPath, 0.999), v.dir);
+          // Flare: raise the nose over the last moments so the main wheels touch first.
+          const flare = smooth(u, GLIDE - 1.6, GLIDE);
+          v.dir.y += flare * 0.14;
+          v.dir.normalize();
+          rocketLive.skid = 0;
         } else {
-          const k = smooth(u, GLIDE, TOUCHDOWN);
-          r.set(0, THREE.MathUtils.lerp(12, PARKED.y, k), 0);
-          v.dir.copy(PARK_DIR).setY(0.06).normalize(); // level, nose a touch up
+          // Braking evenly from touchdown speed to a stop in the middle of the pad.
+          const k = Math.min(1, (u - GLIDE) / ROLL);
+          const along = -ROLL_DIST * (1 - k) * (1 - k);
+          r.copy(RUNWAY_DIR).multiplyScalar(along);
+          // On the sand, then up the pad's low edge for the last few metres.
+          const onPad = 1 - smooth(-along, PAD_RADIUS - 1, PAD_RADIUS + 3);
+          const settle = u - GLIDE;
+          // A small bounce as the gear takes the weight, and the nose settling down.
+          r.y = GEAR_HEIGHT + PAD_TOP * onPad + Math.max(0, Math.sin(Math.min(1, settle / 0.45) * Math.PI)) * 0.12;
+          v.dir.copy(RUNWAY_DIR).setY(0.1 * Math.max(0, 1 - settle / 0.9)).normalize();
+          // A burst of sand on contact, then a dust trail behind the wheels until the pad.
+          rocketLive.skid = (Math.max(0, 1 - settle / 0.6) + 0.6 * (1 - k)) * (1 - onPad);
+          if (settle < dt * 1.5) rocketLive.shake = Math.max(rocketLive.shake, 0.25);
         }
         rocketLive.heat = 1 - smooth(u, 0, 1.6);
-        rocketLive.gear = smooth(u, 4.2, 5.6);
-        rocketLive.hover = u < TOUCHDOWN ? smooth(u, 5.4, 6.6) : Math.max(0, 1 - (u - TOUCHDOWN) * 1.2);
-        const wantThrottle = u < 5.4 ? 0.32 : u < TOUCHDOWN ? 0.06 : 0;
-        rocketLive.throttle += (wantThrottle - rocketLive.throttle) * Math.min(1, dt * 2);
+        rocketLive.gear = smooth(u, 3.0, 4.6);
+        // Engines back to idle on short final; a burst of reverse thrust after touchdown.
+        const wantThrottle = u < GLIDE - 2 ? 0.32 : u < GLIDE ? 0.1 : u < GLIDE + 2.2 ? 0.45 : 0;
+        rocketLive.throttle += (wantThrottle - rocketLive.throttle) * Math.min(1, dt * 2.5);
         fade = 1 - smooth(L, T_SWITCH + 0.15, T_FADE_OUT);
         if (u > TOUCHDOWN + SETTLE) game.land();
 
-        if (u < 3.4) {
+        if (u < 3.6) {
           shot = "descent";
           cam.wantPos.copy(r).addScaledVector(v.dir, -24).add(v.tmp.set(0, 7, 0));
           cam.wantLook.copy(r).addScaledVector(v.dir, 25);
           follow = 6;
-        } else if (u < GLIDE + 0.6) {
-          // Static camera beside the pad, watching the ship come in.
+        } else if (u < GLIDE + 0.7) {
+          // A camera beside the touchdown zone on a long lens, watching the ship come in.
           shot = "final";
-          cam.wantPos.set(34 * far, 4.5, 26 * far);
+          cam.wantPos
+            .copy(RUNWAY_DIR)
+            .multiplyScalar(-ROLL_DIST + 30)
+            .addScaledVector(RUNWAY_SIDE, -34 * far)
+            .setY(PAD_TOP + 3.5);
           cam.wantLook.copy(r);
           follow = 50;
-          // A long lens that keeps the ship a steady size as it comes closer.
           const dist = Math.max(1, cam.wantPos.distanceTo(r));
-          fov = clamp(THREE.MathUtils.radToDeg(2 * Math.atan(18 / dist)), 14, 48);
+          fov = clamp(THREE.MathUtils.radToDeg(2 * Math.atan(16 / dist)), 10, 48);
+        } else if (u < GLIDE + ROLL * 0.75) {
+          // Low and close, chasing the roll-out down the runway.
+          shot = "rollout";
+          cam.wantPos
+            .copy(r)
+            .addScaledVector(RUNWAY_DIR, -20 * far)
+            .addScaledVector(RUNWAY_SIDE, 6.5 * far)
+            .setY(PAD_TOP + 3);
+          cam.wantLook.copy(r).addScaledVector(RUNWAY_DIR, 12);
+          follow = 7;
         } else {
           shot = "touchdown";
           if (p.shot !== shot) p.orbit = 0.95;
@@ -330,13 +539,17 @@ export function Flight() {
       v.prevDir.copy(v.dir);
 
       // Subtitles
+      const level = currentLevel();
+      const site = level.site;
       const captions: [number, string][] = [
-        [0, "Autopilot engaged · approaching Mars"],
-        [T_CUT_ENTRY, "Atmospheric entry · 5.4 km/s"],
-        [T_SWITCH + 0.5, "Descending through the clouds"],
-        [T_SWITCH + 3.4, "Final approach · Pad 1"],
-        [T_SWITCH + GLIDE, "Hover · landing gear down"],
-        [T_SWITCH + TOUCHDOWN, "Touchdown. Welcome to Mars."],
+        [0, `Autopilot engaged · approaching ${site.name}`],
+        [T_CUT_ENTRY, site.clouds ? "Atmospheric entry · 5.4 km/s" : "Orbit insertion · retro burn"],
+        [T_SWITCH + 0.5, site.clouds ? "Descending through the clouds" : `Descending over the ice of ${site.name}`],
+        [T_SWITCH + 3.6, "Gear down · final approach"],
+        [T_SWITCH + GLIDE - 1.6, "Flare"],
+        [T_SWITCH + GLIDE, "Touchdown on the sand · braking"],
+        [T_SWITCH + GLIDE + ROLL * 0.7, `Rolling onto Pad ${level.number}`],
+        [T_SWITCH + TOUCHDOWN, `Welcome to ${site.name}.`],
       ];
       let c = -1;
       for (let i = 0; i < captions.length; i++) if (L >= captions[i][0]) c = i;
@@ -407,6 +620,7 @@ export function Flight() {
 
     if (obj) obj.visible = phase !== "crashed" && phase !== "gameover";
     rocketLive.speed = phase === "flying" ? p.speed : 0;
+    if (game.scene === "surface") shadowFocus.copy(rocketLive.pos);
 
     /* ---------- Haze between space and Mars ---------- */
     if (Math.abs(fade - p.fade) > 0.004 || (fade === 0 && p.fade !== 0)) {

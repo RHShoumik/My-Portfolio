@@ -6,12 +6,15 @@ import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { makeRockGeometry } from "./asteroids";
 import { fbm } from "./noise";
-import { rocketLive } from "./store";
+import type { Site } from "./levels";
+import { GEAR_HEIGHT } from "./ship";
+import { rocketLive, shadowFocus, useLevel } from "./store";
 
 /*
- * The surface of Mars, used for the landing cinematic. It has its own
- * coordinates: the landing pad sits at the origin, and the ship comes in
- * from the north-west along DESCENT.
+ * The surface of Mars (or a moon), used for the landing cinematic. It has its
+ * own coordinates: the ship touches down on the sand ROLL_DIST before the pad
+ * (along RUNWAY_DIR, a strip of levelled ground with no paving) and rolls up
+ * onto the landing pad at the origin.
  */
 
 /** Low afternoon sun, behind the main landing camera. */
@@ -20,18 +23,52 @@ export const SURFACE_SUN = new THREE.Vector3(0.55, 0.36, 0.62).normalize();
 /** Top of the landing pad. */
 export const PAD_TOP = 0.45;
 
-/** Butterscotch haze at the horizon, as a linear colour (shared by sky and fog). */
-const HORIZON = new THREE.Color().setRGB(0.86, 0.62, 0.47);
+/** The landing heading (the direction you touch down and roll in) and its left side. */
+export const RUNWAY_DIR = new THREE.Vector3(52, 0, 32).normalize();
+export const RUNWAY_SIDE = new THREE.Vector3(RUNWAY_DIR.z, 0, -RUNWAY_DIR.x);
+/**
+ * The levelled sand strip you land on (before the pad) and take off along
+ * (past it): along-axis extent and half its width, in metres. No paving.
+ */
+export const RUNWAY = { start: -520, end: 420, half: 10 };
+/** Wheels touch the sand this far before the pad centre; the roll-out covers the rest. */
+export const ROLL_DIST = 240;
 
-/** The automatic approach, from high above the plains down to a hover over the pad. */
+/** A point `along` the runway axis, `side` metres to its left, at height y. */
+const onAxis = (along: number, y: number, side = 0) =>
+  new THREE.Vector3().addScaledVector(RUNWAY_DIR, along).addScaledVector(RUNWAY_SIDE, side).setY(y);
+
+/** How far a point is from the levelled landing strip (0 on it). */
+export function runwayDistance(x: number, z: number) {
+  const along = x * RUNWAY_DIR.x + z * RUNWAY_DIR.z;
+  const across = x * RUNWAY_SIDE.x + z * RUNWAY_SIDE.z;
+  const da = along < RUNWAY.start ? RUNWAY.start - along : along > RUNWAY.end ? along - RUNWAY.end : 0;
+  const dc = Math.max(0, Math.abs(across) - RUNWAY.half);
+  return Math.hypot(da, dc);
+}
+
+/** Radius of the landing pad's top. */
+export const PAD_RADIUS = 14.6;
+
+/** Ground height, counting the landing pad. */
+export function surfaceHeight(x: number, z: number) {
+  return Math.hypot(x, z) < PAD_RADIUS ? PAD_TOP : terrainHeight(x, z);
+}
+
+/**
+ * The automatic approach: a descending turn from high above the plains onto
+ * the landing line, then a straight final on a 3° glide slope down to the
+ * touchdown point (wheels on the sand).
+ */
 export const DESCENT = new THREE.CatmullRomCurve3(
   [
-    new THREE.Vector3(-1150, 560, -950),
-    new THREE.Vector3(-760, 360, -620),
-    new THREE.Vector3(-420, 190, -330),
-    new THREE.Vector3(-170, 78, -120),
-    new THREE.Vector3(-52, 26, -32),
-    new THREE.Vector3(0, 12, 0),
+    onAxis(-2700, 520, 420),
+    onAxis(-2050, 300, 210),
+    onAxis(-1450, 130, 60),
+    onAxis(-950, 50, 6),
+    onAxis(-650, 24),
+    onAxis(-420, 11),
+    onAxis(-ROLL_DIST, GEAR_HEIGHT),
   ],
   false,
   "centripetal"
@@ -64,8 +101,8 @@ export function terrainHeight(x: number, z: number) {
   // Far mountains, like the rim of a huge old crater
   const m = smooth(d, 1400, 2600);
   if (m > 0) h += m * (fbm(x * 0.0012, 2.5, z * 0.0012, 23, 5) * 620 - 120);
-  // Flat ground around the pad
-  return h * smooth(d, 34, 140);
+  // Flat ground along the landing strip and around the pad
+  return h * Math.min(smooth(runwayDistance(x, z), 4, 110), smooth(d, 34, 140));
 }
 
 /* ------------------------------------------------------------------ */
@@ -100,7 +137,7 @@ function makeGroundDetail() {
   return t;
 }
 
-function makePadTexture() {
+function makePadTexture(label: string) {
   return canvasTexture(512, (g, n) => {
     const c = n / 2;
     g.fillStyle = "#6d6863";
@@ -110,13 +147,12 @@ function makePadTexture() {
       g.fillStyle = `rgba(${v},${v - 4},${v - 8},0.35)`;
       g.fillRect(Math.random() * n, Math.random() * n, 2, 2);
     }
-    // Scorch mark from earlier landings
+    // Scorch and dust from earlier landings
     const scorch = g.createRadialGradient(c, c, 10, c, c, 170);
     scorch.addColorStop(0, "rgba(20,16,14,0.55)");
     scorch.addColorStop(1, "rgba(20,16,14,0)");
     g.fillStyle = scorch;
     g.fillRect(0, 0, n, n);
-    // Rings
     g.strokeStyle = "#e8b53a";
     g.lineWidth = 16;
     g.beginPath();
@@ -129,7 +165,6 @@ function makePadTexture() {
     g.arc(c, c, 190, 0, Math.PI * 2);
     g.stroke();
     g.setLineDash([]);
-    // Initials
     g.fillStyle = "rgba(255,255,255,0.9)";
     g.font = "800 170px system-ui, -apple-system, Segoe UI, sans-serif";
     g.textAlign = "center";
@@ -137,7 +172,7 @@ function makePadTexture() {
     g.fillText("RH", c, c + 6);
     g.font = "700 26px system-ui, -apple-system, Segoe UI, sans-serif";
     g.fillStyle = "#e8b53a";
-    g.fillText("PAD 1 · MARS", c, c + 118);
+    g.fillText(label, c, c + 118);
   });
 }
 
@@ -171,17 +206,14 @@ function makeSoftDot() {
 /*  Terrain: a polar grid, fine near the pad and coarse far away       */
 /* ------------------------------------------------------------------ */
 
-function makeTerrain() {
+function makeTerrain(site: Site) {
   const RINGS = 170;
   const SEGS = 200;
   const MAX_R = 4600;
   const positions: number[] = [0, terrainHeight(0, 0), 0];
   const uvs: number[] = [0, 0];
   const colors: number[] = [];
-  const rust = new THREE.Color("#9b4a2a");
-  const dust = new THREE.Color("#c27a4e");
-  const pale = new THREE.Color("#d29a70");
-  const basalt = new THREE.Color("#4e2a1d");
+  const [rust, dust, pale, basalt] = site.ground.map((c) => new THREE.Color(c));
   const c = new THREE.Color();
 
   const colorAt = (x: number, z: number, h: number) => {
@@ -232,13 +264,18 @@ function makeTerrain() {
 /*  Pieces                                                             */
 /* ------------------------------------------------------------------ */
 
-function MarsSky() {
+function MarsSky({ site }: { site: Site }) {
   const mesh = useRef<THREE.Mesh>(null);
   const { camera } = useThree();
   const material = useMemo(
     () =>
       new THREE.ShaderMaterial({
-        uniforms: { uSun: { value: SURFACE_SUN }, uHorizon: { value: HORIZON } },
+        uniforms: {
+          uSun: { value: SURFACE_SUN },
+          uHorizon: { value: new THREE.Color().setRGB(...site.horizon) },
+          uZenith: { value: new THREE.Color().setRGB(...site.zenith) },
+          uStars: { value: site.stars ? 1 : 0 },
+        },
         vertexShader: /* glsl */ `
           varying vec3 vDir;
           void main() {
@@ -249,15 +286,25 @@ function MarsSky() {
         fragmentShader: /* glsl */ `
           uniform vec3 uSun;
           uniform vec3 uHorizon;
+          uniform vec3 uZenith;
+          uniform float uStars;
           varying vec3 vDir;
+          float hash(vec3 p) { return fract(sin(dot(p, vec3(12.9898, 78.233, 37.719))) * 43758.5453); }
           void main() {
             vec3 d = normalize(vDir);
             float h = max(d.y, 0.0);
-            vec3 zenith = vec3(0.36, 0.22, 0.17);
-            vec3 col = mix(uHorizon, zenith, pow(h, 0.5));
+            vec3 col = mix(uHorizon, uZenith, pow(h, 0.5));
             float s = max(dot(d, uSun), 0.0);
-            // Mars has a small sun with a bluish halo around it
-            col += vec3(0.5, 0.62, 0.85) * pow(s, 40.0) * 0.55;
+            if (uStars > 0.5) {
+              // No air: a black sky full of stars, and a sharp sun with a faint glow
+              vec3 cell = floor(d * 420.0);
+              float star = step(0.9975, hash(cell));
+              col += vec3(star * (0.35 + 0.65 * hash(cell + 7.0))) * smoothstep(-0.02, 0.08, d.y);
+              col += vec3(1.0, 0.95, 0.85) * pow(s, 300.0) * 0.6;
+            } else {
+              // A small sun with a bluish halo, as seen through thin dusty air
+              col += vec3(0.5, 0.62, 0.85) * pow(s, 40.0) * 0.55;
+            }
             col += vec3(1.0, 0.97, 0.92) * smoothstep(0.9994, 0.9998, s) * 3.0;
             gl_FragColor = vec4(col, 1.0);
             #include <tonemapping_fragment>
@@ -267,7 +314,7 @@ function MarsSky() {
         side: THREE.BackSide,
         depthWrite: false,
       }),
-    []
+    [site]
   );
   useFrame(() => {
     mesh.current?.position.copy(camera.position);
@@ -279,8 +326,8 @@ function MarsSky() {
   );
 }
 
-function Ground() {
-  const geometry = useMemo(() => makeTerrain(), []);
+function Ground({ site }: { site: Site }) {
+  const geometry = useMemo(() => makeTerrain(site), [site]);
   const detail = useMemo(() => makeGroundDetail(), []);
   return (
     <mesh geometry={geometry} receiveShadow>
@@ -289,7 +336,7 @@ function Ground() {
   );
 }
 
-function Boulders() {
+function Boulders({ color }: { color: string }) {
   const geometry = useMemo(() => makeRockGeometry(41), []);
   const mesh = useRef<THREE.InstancedMesh>(null);
   const COUNT = 260;
@@ -311,7 +358,9 @@ function Boulders() {
       const r = 24 + Math.pow(rnd(), 1.6) * 520;
       const x = Math.cos(a) * r;
       const z = Math.sin(a) * r;
-      const size = 0.25 + Math.pow(rnd(), 3) * (r < 60 ? 0.9 : 3.2);
+      // Keep the runway and its shoulders clear.
+      const clear = runwayDistance(x, z) < 12;
+      const size = clear ? 0 : 0.25 + Math.pow(rnd(), 3) * (r < 60 ? 0.9 : 3.2);
       s.set(size * (0.8 + rnd() * 0.5), size * (0.5 + rnd() * 0.4), size * (0.8 + rnd() * 0.5));
       v.set(x, terrainHeight(x, z) - size * 0.25, z);
       q.setFromEuler(e.set(rnd() * 0.4, rnd() * Math.PI * 2, rnd() * 0.4));
@@ -322,19 +371,18 @@ function Boulders() {
   }, []);
   return (
     <instancedMesh ref={mesh} args={[geometry, undefined, COUNT]} castShadow receiveShadow>
-      <meshStandardMaterial vertexColors color="#c87048" roughness={1} />
+      <meshStandardMaterial vertexColors color={color} roughness={1} />
     </instancedMesh>
   );
 }
 
-/** Landing pad with chasing edge lights and approach lights pointing back up the path. */
-function Pad({ dot }: { dot: THREE.Texture }) {
-  const texture = useMemo(() => makePadTexture(), []);
+/** The landing pad, with chasing edge lights and approach lights pointing back along the landing line. */
+function Pad({ dot, label }: { dot: THREE.Texture; label: string }) {
+  const texture = useMemo(() => makePadTexture(label), [label]);
   const lights = useRef<(THREE.Sprite | null)[]>([]);
   const approach = useRef<(THREE.Sprite | null)[]>([]);
   const EDGE = 16;
   const APPROACH = 8;
-  const dir = useMemo(() => new THREE.Vector2(-170, -120).normalize(), []);
 
   useFrame((state) => {
     const t = state.clock.elapsedTime;
@@ -377,9 +425,9 @@ function Pad({ dot }: { dot: THREE.Texture }) {
         );
       })}
       {Array.from({ length: APPROACH }, (_, i) => {
-        const r = 20 + i * 9;
-        const x = dir.x * r;
-        const z = dir.y * r;
+        const along = -20 - i * 9;
+        const x = RUNWAY_DIR.x * along;
+        const z = RUNWAY_DIR.z * along;
         return (
           <sprite
             key={i}
@@ -393,6 +441,24 @@ function Pad({ dot }: { dot: THREE.Texture }) {
           </sprite>
         );
       })}
+    </group>
+  );
+}
+
+/** Faint wheel tracks in the sand from earlier landings, from touchdown to the pad. */
+function Tracks({ color }: { color: string }) {
+  const len = ROLL_DIST - PAD_RADIUS;
+  const mid = -(ROLL_DIST + PAD_RADIUS) / 2;
+  const yaw = Math.atan2(-RUNWAY_DIR.z, RUNWAY_DIR.x);
+  const tone = useMemo(() => new THREE.Color(color).multiplyScalar(0.55), [color]);
+  return (
+    <group position={[RUNWAY_DIR.x * mid, 0.03, RUNWAY_DIR.z * mid]} rotation={[0, yaw, 0]}>
+      {[-1.9, 1.9, 0].map((side) => (
+        <mesh key={side} position={[0, 0, side]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+          <planeGeometry args={[len, side === 0 ? 0.35 : 0.55]} />
+          <meshStandardMaterial color={tone} roughness={1} transparent opacity={0.28} depthWrite={false} />
+        </mesh>
+      ))}
     </group>
   );
 }
@@ -468,7 +534,7 @@ function Base({ dot }: { dot: THREE.Texture }) {
 }
 
 /** Thin water-ice clouds the ship descends through. */
-function Clouds() {
+function Clouds({ color }: { color: string }) {
   const texture = useMemo(() => makeCloudTexture(), []);
   const clouds = useMemo(() => {
     const list: { pos: THREE.Vector3; sx: number; sy: number; o: number }[] = [];
@@ -493,7 +559,7 @@ function Clouds() {
     <group>
       {clouds.map((c, i) => (
         <sprite key={i} position={c.pos} scale={[c.sx, c.sy, 1]}>
-          <spriteMaterial map={texture} color="#f7e4d4" transparent opacity={c.o} depthWrite={false} />
+          <spriteMaterial map={texture} color={color} transparent opacity={c.o} depthWrite={false} />
         </sprite>
       ))}
     </group>
@@ -501,7 +567,7 @@ function Clouds() {
 }
 
 /** Dust blown out across the ground by the hover thrusters. */
-function LandingDust({ dot }: { dot: THREE.Texture }) {
+function LandingDust({ dot, color }: { dot: THREE.Texture; color: string }) {
   const N = 320;
   const data = useMemo(() => {
     const g = new THREE.BufferGeometry();
@@ -509,16 +575,18 @@ function LandingDust({ dot }: { dot: THREE.Texture }) {
     g.setAttribute("color", new THREE.BufferAttribute(new Float32Array(N * 4), 4));
     return { geometry: g, vel: new Float32Array(N * 3), age: new Float32Array(N).fill(99), next: { i: 0, carry: 0 } };
   }, []);
-  const base = useMemo(() => new THREE.Color("#caa07c"), []);
+  const base = useMemo(() => new THREE.Color(color), [color]);
 
   useFrame((_, rawDt) => {
     const dt = Math.min(rawDt, 0.05);
     const pos = data.geometry.attributes.position as THREE.BufferAttribute;
     const col = data.geometry.attributes.color as THREE.BufferAttribute;
     const ship = rocketLive.pos;
-    const ground = Math.hypot(ship.x, ship.z) < 14.5 ? PAD_TOP : terrainHeight(ship.x, ship.z);
+    const ground = surfaceHeight(ship.x, ship.z);
     const alt = ship.y - ground;
-    const rate = rocketLive.hover > 0.15 && alt < 18 ? rocketLive.hover * (1 - alt / 18) * 260 : 0;
+    // Thrusters blasting the ground on a hover, or tyres and brakes on the runway.
+    const hover = rocketLive.hover > 0.15 && alt < 18 ? rocketLive.hover * (1 - alt / 18) * 260 : 0;
+    const rate = Math.max(hover, alt < 3 ? rocketLive.skid * 240 : 0);
 
     data.next.carry += rate * dt;
     while (data.next.carry >= 1) {
@@ -563,11 +631,49 @@ function LandingDust({ dot }: { dot: THREE.Texture }) {
   );
 }
 
+/** The giant planet hanging over a moon, kept at the same spot in the sky. */
+function SkyPlanet({ planet }: { planet: NonNullable<Site["skyPlanet"]> }) {
+  const group = useRef<THREE.Group>(null);
+  const { camera } = useThree();
+  const map = useMemo(() => {
+    const t = new THREE.TextureLoader().load(planet.map);
+    t.colorSpace = THREE.SRGBColorSpace;
+    return t;
+  }, [planet.map]);
+  const ring = useMemo(() => {
+    if (!planet.ring) return null;
+    const inner = planet.size * 1.25;
+    const outer = planet.size * 2.3;
+    const g = new THREE.RingGeometry(inner, outer, 128, 1);
+    return g;
+  }, [planet.ring, planet.size]);
+  const offset = useMemo(() => new THREE.Vector3(...planet.dir).normalize().multiplyScalar(5600), [planet.dir]);
+  useFrame(() => {
+    group.current?.position.copy(camera.position).add(offset);
+  });
+  return (
+    <group ref={group}>
+      <group rotation={[0.35, 0.4, 0.25]}>
+        <mesh renderOrder={-1}>
+          <sphereGeometry args={[planet.size, 96, 64]} />
+          <meshStandardMaterial map={map} roughness={1} fog={false} emissive="#ffffff" emissiveMap={map} emissiveIntensity={0.18} />
+        </mesh>
+        {ring && (
+          <mesh geometry={ring} rotation={[-Math.PI / 2 + 0.12, 0, 0]} renderOrder={-1}>
+            <meshBasicMaterial color="#e9dcc0" transparent opacity={0.55} side={THREE.DoubleSide} fog={false} depthWrite={false} />
+          </mesh>
+        )}
+      </group>
+    </group>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /*  The whole surface                                                  */
 /* ------------------------------------------------------------------ */
 
-export function MarsSurface({ visible }: { visible: boolean }) {
+export function MarsSurface({ visible, site }: { visible: boolean; site: Site }) {
+  const level = useLevel();
   const { scene } = useThree();
   const dot = useMemo(() => makeSoftDot(), []);
   const sun = useRef<THREE.DirectionalLight>(null);
@@ -575,11 +681,11 @@ export function MarsSurface({ visible }: { visible: boolean }) {
   // Haze over the plains, only while we're on the surface.
   useEffect(() => {
     if (!visible) return;
-    scene.fog = new THREE.Fog(HORIZON.clone(), 140, 3300);
+    scene.fog = new THREE.Fog(new THREE.Color().setRGB(...site.horizon), site.fog[0], site.fog[1]);
     return () => {
       scene.fog = null;
     };
-  }, [visible, scene]);
+  }, [visible, scene, site]);
 
   useEffect(() => {
     const light = sun.current;
@@ -594,26 +700,40 @@ export function MarsSurface({ visible }: { visible: boolean }) {
     cam.updateProjectionMatrix();
   }, []);
 
+  // The shadow box follows whatever we are watching (ship or astronaut), in
+  // whole-metre steps so the shadows don't shimmer as it moves.
+  useFrame(() => {
+    const light = sun.current;
+    if (!light || !visible) return;
+    const fx = Math.round(shadowFocus.x);
+    const fz = Math.round(shadowFocus.z);
+    light.target.position.set(fx, 0, fz);
+    light.position.set(fx, 0, fz).addScaledVector(SURFACE_SUN, 400);
+    light.target.updateMatrixWorld();
+  });
+
   return (
     <group visible={visible}>
-      <MarsSky />
-      <hemisphereLight args={["#f3cfb0", "#5c3322", 0.85]} />
+      <MarsSky site={site} />
+      {site.skyPlanet && <SkyPlanet planet={site.skyPlanet} />}
+      <hemisphereLight args={site.hemi} />
       <directionalLight
         ref={sun}
         position={SURFACE_SUN.clone().multiplyScalar(400)}
-        intensity={2.4}
-        color="#ffe3c6"
+        intensity={site.sunIntensity}
+        color={site.sun}
         castShadow
         shadow-mapSize={[2048, 2048]}
         shadow-bias={-0.0004}
         shadow-normalBias={0.04}
       />
-      <Ground />
-      <Boulders />
-      <Pad dot={dot} />
+      <Ground site={site} />
+      <Boulders color={site.boulder} />
+      <Pad dot={dot} label={`PAD ${level.number} · ${site.name.toUpperCase()}`} />
+      <Tracks color={site.dust} />
       <Base dot={dot} />
-      <Clouds />
-      <LandingDust dot={dot} />
+      {site.clouds && <Clouds color={site.clouds} />}
+      <LandingDust dot={dot} color={site.dust} />
     </group>
   );
 }

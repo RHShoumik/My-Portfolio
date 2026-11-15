@@ -23,6 +23,6 @@ export const DESTINATIONS: Destination[] = [
   { id: "skills", place: "Mars", label: "Skills", note: "Level 1", map: "/space/mars.jpg" },
   { id: "experience", place: "Jupiter", label: "Experience", note: "Level 2", map: "/space/jupiter.jpg" },
   { id: "projects", place: "Saturn", label: "Projects", note: "Level 3", map: "/space/saturn.jpg", ring: true },
-  { id: "travel", place: "Neptune", label: "Travel", note: "Level 4", map: "/space/neptune.jpg" },
+  { id: "travel", place: "Earth", label: "Travel", note: "Level 4 · back home", map: "/space/earth.jpg" },
   { id: "contact", place: "Radio", label: "Contact", note: "Call mission control" },
 ];
