@@ -65,7 +65,7 @@ export const experiences = [
     role: "Frontend Developer",
     period: "2022 — 2023",
     description:
-      "Built the influencer marketing platform frontend from the ground up. Implemented real-time dashboards, campaign analytics, and PayPal payment flows for a Singapore-based startup.",
+      "Built the influencer marketing platform frontend from the ground up. Implemented real-time dashboards, campaign analytics, and PayPal payment flows as part of HypeScout's Dhaka team.",
     tech: ["React.js", "TypeScript", "Tailwind CSS", "PayPal", "Chart.js"],
   },
   {
@@ -110,6 +110,30 @@ export const projects = [
     tech: ["React.js", "TypeScript", "Tailwind CSS", "PayPal", "Chart.js"],
     url: "https://hypescout.co",
     image: "/projects/hypescout.png",
+  },
+  {
+    title: "Media Planning Tool",
+    description:
+      "A TV campaign planning system for media agencies: an 11-step wizard, spot allocation across channels and days, a pure GRP/CPRP calculation engine, Excel rate-card import and a 5-sheet Excel export.",
+    tech: ["React.js", "TypeScript", "Zustand", "Tailwind CSS", "Excel Export"],
+    url: "#",
+    image: "/projects/media-planning-tool.png",
+  },
+  {
+    title: "Hextech BD",
+    description:
+      "A multi-vendor e-commerce marketplace with storefront, vendor dashboards and an admin panel, four payment gateways, AI tools and 17 languages including right-to-left Arabic.",
+    tech: ["Next.js", "TypeScript", "MongoDB", "Tailwind CSS", "Stripe"],
+    url: "https://hextechbd.com",
+    image: "/projects/hextechbd.png",
+  },
+  {
+    title: "Free Invoice Generator",
+    description:
+      "A free online invoice maker: pick from 100+ templates, fill in the details and download a professional invoice as PDF or PNG in one click. No sign-up and no watermark.",
+    tech: ["100+ Templates", "PDF Export", "PNG Export", "No Sign-up"],
+    url: "https://free-invoice-generator.rhshoumik.dev/",
+    image: "/projects/free-invoice-generator.png",
   },
 ] as const;
 

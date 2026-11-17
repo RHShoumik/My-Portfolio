@@ -1,0 +1,62 @@
+---
+title: "Building a TV Media Planning Tool with React 19, Zustand and Excel"
+description: "Ragib Hassan Shoumik, a software engineer in Dhaka, on building a TV campaign planning tool: an 11-step wizard, a pure GRP calculation engine, IndexedDB rate cards and Excel export."
+date: "2026-11-17"
+tags: ["react", "typescript", "zustand", "excel", "media-planning"]
+published: true
+---
+
+# Building a TV Media Planning Tool with React 19, Zustand and Excel
+
+I'm Ragib Hassan Shoumik, a software engineer in Dhaka, Bangladesh. One of the more unusual things I've worked on is a **media planning tool**: software that helps an agency plan a TV advertising campaign, from picking channels to producing the spreadsheet a client signs off on.
+
+If you've never seen how this is done, the short version is that it usually lives in giant Excel files. This project turns that process into a guided web app. This post covers the parts I found most interesting.
+
+## What a media planner actually does
+
+A planner takes a brand's budget and a campaign window, then decides which TV programs to buy and how many ad spots to run on which days. For every row of that plan they need numbers:
+
+- **GRP**, gross rating points: how much audience the spots reach in total.
+- **NGRP**, the same figure normalised to a 10-second ad, so 30-second and 10-second ads can be compared.
+- **CPRP**, the cost of each rating point, which tells you whether a buy is good value.
+- The money side: net cost, agency commission, VAT and the grand total.
+
+Getting any of these wrong means a wrong invoice, so the maths matters more than the animations.
+
+## An 11-step wizard instead of one giant form
+
+The app guides the planner through eleven steps: brand and campaign name, single or multiple plans, ad type, campaign dates, ad durations, channels, rate card upload, agency commission, spot planning, review and export.
+
+Each step is its own component. On desktop a vertical stepper shows progress; on a phone it becomes a bottom sheet. A plan remembers the last step you were on, so reopening it drops you back where you stopped, and the URL carries the plan id and step (`/tv-planning/wizard/:planId?step=9`), so a link goes straight to the right place.
+
+## The calculation engine is just functions
+
+The decision I'm happiest with is keeping all the maths in one file of plain functions with no React in them. Each row gets its numbers from a single function:
+
+```ts
+totalSpots = sum of dailySpots
+GRP        = totalSpots × TVR
+NGRP       = (GRP × tvcDurSec) / 10
+netCost    = ratePerMin × totalMin
+CPRP       = netCost / GRP   // 0 when GRP is 0
+```
+
+Because these are pure functions, they are easy to test and easy to trust. The review step and the summary cards call the same functions, so every screen shows the same numbers. The divide-by-zero guards live in one place instead of being repeated in every component.
+
+## State: one store, careful subscriptions
+
+The plan lives in a Zustand store that is saved to `localStorage`. Spot planning can mean 50 rows by 30 days, which is 1,500 little inputs, so how components subscribe matters. Reading the whole store makes everything re-render on each keystroke; reading only the field you need (`useCampaignStore(s => s.planRows)`) keeps typing in one cell from repainting the whole table. It's an easy thing to get wrong in a big form.
+
+## Rate cards in the browser
+
+Agencies receive rate cards and program lists as Excel files. Rather than retype them, the planner drops a `.xlsx` file onto the upload zone. The app reads every sheet, works out what each one is from its column headers (a program basket, a channel rate sheet or a TVR curve), and saves the result to **IndexedDB** with Dexie. Next time, the latest upload is already there, and each plan can point at the basket it was built from.
+
+## Export back to Excel
+
+The finished plan exports as a five-sheet workbook: plan summary, detailed plan with the daily spot grid, genre and day-part split, KPI dashboard and a frequency curve. This is the file that goes to the client, so it needed to look like something an agency would be happy to send.
+
+## Demo data, and what's next
+
+So the app can be shown to a client without a server, it starts with realistic demo data: sample plans, users, an audit log and rate cards. There's also a separate Node and PostgreSQL backend with a documented API for the version that saves plans centrally.
+
+If you're building something where the real product is a spreadsheet, my advice is to keep the maths pure, treat the Excel file as a first-class input and output, and design every step so a tired planner can't get lost. You can see this and my other work on [my projects page](/#projects), or [get in touch](/#contact) if you're building something similar.
