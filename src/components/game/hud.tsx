@@ -26,6 +26,7 @@ import {
   input,
   isLandMode,
   useGame,
+  useIntro,
   type Mode,
 } from "./store";
 
@@ -119,6 +120,34 @@ function Joystick() {
   );
 }
 
+/** Film-style bars and a title card while the opening flight plays. */
+function IntroOverlay() {
+  return (
+    <div className="pointer-events-none absolute inset-0">
+      <div className="absolute inset-x-0 top-0 h-[11vh] origin-top bg-black animate-in slide-in-from-top duration-1000" />
+      <div className="absolute inset-x-0 bottom-0 h-[11vh] origin-bottom bg-black animate-in slide-in-from-bottom duration-1000" />
+      <div className="absolute inset-x-0 bottom-[15vh] px-6 text-center text-white [text-shadow:0_2px_18px_rgba(0,0,0,.55)]">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.42em] text-amber-100/90 animate-in fade-in duration-1000 delay-700 fill-mode-both">
+          Ragib Hassan Shoumik
+        </p>
+        <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight animate-in fade-in slide-in-from-bottom-2 duration-1000 delay-1000 fill-mode-both md:text-6xl">
+          The Archipelago
+        </h1>
+        <p className="mt-2 text-sm text-white/80 animate-in fade-in duration-1000 delay-[1800ms] fill-mode-both md:text-base">
+          Four islands. Skills, experience, travel and a radio to say hello.
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={() => useIntro.getState().skip()}
+        className="pointer-events-auto absolute bottom-[3.2vh] right-5 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-xs font-medium text-white backdrop-blur-sm transition hover:bg-white/20"
+      >
+        Skip intro ›
+      </button>
+    </div>
+  );
+}
+
 export function Hud() {
   const soundOn = useSoundEnabled();
   const toggleSound = () => {
@@ -144,9 +173,12 @@ export function Hud() {
   const land = isLandMode(mode);
   const onIsland = distance === 0 && land;
   const ModeIcon = modeInfo[mode].icon;
+  const intro = useIntro((s) => s.active);
+
+  if (intro) return <IntroOverlay />;
 
   return (
-    <div className="pointer-events-none absolute inset-0">
+    <div className="pointer-events-none absolute inset-0 animate-in fade-in duration-700">
       {/* top bar */}
       <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4">
         <div className={`${chip} flex items-center gap-2`}>

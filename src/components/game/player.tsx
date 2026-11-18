@@ -16,6 +16,7 @@ import {
   input,
   isLandMode,
   motion,
+  ride,
   useGame,
   type Mode,
 } from "./store";
@@ -224,8 +225,16 @@ export function Player() {
     const t = state.clock.elapsedTime;
     const p = s.current;
 
+    /* ---------- 0. Thrill rides own the player while active ---------- */
+    if (ride.release) {
+      const r = ride.release;
+      ride.release = null;
+      Object.assign(p, { x: r.x, z: r.z, heading: r.heading, mode: r.mode, speed: 0 });
+    }
+    const riding = ride.active;
+
     /* ---------- 1. Requested changes of mode ---------- */
-    const want = cmd.pending;
+    const want = riding ? null : cmd.pending;
     cmd.pending = null;
     if (want && want !== p.mode) {
       const sd = landSDF(p.x, p.z);
@@ -284,7 +293,7 @@ export function Player() {
       }
     }
 
-    if (useActivity.getState().panel) {
+    if (useActivity.getState().panel || riding) {
       input.forward = 0;
       input.turn = 0;
       p.speed = 0;
@@ -329,23 +338,31 @@ export function Player() {
     // Keep everyone inside the playable sea.
     p.x = THREE.MathUtils.clamp(p.x, -540, 540);
     p.z = THREE.MathUtils.clamp(p.z, -180, 1180);
+    if (riding) {
+      p.x = ride.x;
+      p.z = ride.z;
+      p.heading = ride.heading;
+      p.speed = 0;
+    }
 
     /* ---------- 3. Place and pose ---------- */
     let y: number;
-    if (land) y = heightAt(p.x, p.z) ?? p.y;
+    if (riding) y = ride.y;
+    else if (land) y = heightAt(p.x, p.z) ?? p.y;
     else if (p.mode === "boat") y = waveHeight(p.x, p.z, t) * 0.7 + 0.1;
     else
       y =
         waveHeight(p.x, p.z, t) * 0.8 +
         (p.mode === "swim" ? 0.12 : -0.3);
-    p.y += (y - p.y) * Math.min(1, dt * (land ? 12 : 18));
+    if (riding) p.y = y;
+    else p.y += (y - p.y) * Math.min(1, dt * (land ? 12 : 18));
 
     group.current.position.set(p.x, p.y, p.z);
     group.current.rotation.y = p.heading;
 
-    hiker.current.visible = p.mode === "walk" || p.mode === "swim";
-    boat.current.visible = p.mode === "boat";
-    buggy.current.visible = p.mode === "buggy";
+    hiker.current.visible = riding || p.mode === "walk" || p.mode === "swim";
+    boat.current.visible = !riding && p.mode === "boat";
+    buggy.current.visible = !riding && p.mode === "buggy";
 
     const lean = cfg.vehicle
       ? -input.turn * Math.min(Math.abs(p.speed) / 12, 1)
@@ -354,10 +371,15 @@ export function Player() {
       p.mode === "boat" ? lean * 0.26 + Math.sin(t * 1.2) * 0.03 : lean * 0.05;
     const pitch =
       p.mode === "boat" ? -(p.speed / 27) * 0.12 + Math.sin(t * 1.5) * 0.02 : 0;
-    tilt.current.rotation.z +=
-      (roll - tilt.current.rotation.z) * Math.min(1, dt * 6);
-    tilt.current.rotation.x +=
-      (pitch - tilt.current.rotation.x) * Math.min(1, dt * 6);
+    if (riding) {
+      // Rides set the pose directly (flips need to be exact).
+      tilt.current.rotation.set(ride.pitch, 0, ride.roll);
+    } else {
+      tilt.current.rotation.z +=
+        (roll - tilt.current.rotation.z) * Math.min(1, dt * 6);
+      tilt.current.rotation.x +=
+        (pitch - tilt.current.rotation.x) * Math.min(1, dt * 6);
+    }
 
     motion.speed = p.speed;
     motion.turn = input.turn;
@@ -365,7 +387,7 @@ export function Player() {
     playerPos.set(p.x, p.y, p.z);
 
     // Footsteps and swim strokes, one per stride.
-    if (!cfg.vehicle) {
+    if (!cfg.vehicle && !riding) {
       p.stride += Math.abs(p.speed) * dt;
       const strideLength = p.mode === "walk" ? 1.7 : 1.5;
       if (p.stride > strideLength) {
@@ -385,7 +407,7 @@ export function Player() {
     }
 
     /* ---------- 4. Follow camera ---------- */
-    const [back, up] = cfg.cam;
+    const [back, up] = riding ? ride.cam : cfg.cam;
     const focusHeight = p.mode === "swim" ? 0.45 : 1.6;
     const elevation = THREE.MathUtils.clamp(
       Math.atan2(up - focusHeight, back) + cameraOrbit.pitch,
@@ -393,7 +415,7 @@ export function Player() {
       1.3,
     );
     const radius = Math.hypot(back, up - focusHeight) * cameraOrbit.zoom;
-    const azimuth = p.heading + cameraOrbit.yaw;
+    const azimuth = p.heading + cameraOrbit.yaw + (riding ? ride.camYaw : 0);
     desired.current.set(
       p.x - Math.sin(azimuth) * Math.cos(elevation) * radius,
       p.y + focusHeight + Math.sin(elevation) * radius,

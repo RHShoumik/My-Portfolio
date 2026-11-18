@@ -16,6 +16,11 @@ import { TravelGallery, GalleryReader } from "./travel-gallery";
 import { Sea } from "./sea";
 import { cmd, input, isLandMode, useGame } from "./store";
 import { playerPos, SKY } from "./world";
+import { Flora } from "./flora";
+import { Animals, Birds, Dolphins } from "./wildlife";
+import { SkyDome, SUN_COLOR, SUN_DIR } from "./sky";
+import { IntroCamera } from "./intro";
+import { Thrills, ThrillHud } from "./thrills";
 
 const FOG_NEAR = 180;
 const FOG_FAR = 620;
@@ -27,7 +32,11 @@ function Sun() {
 
   useFrame(() => {
     if (!light.current) return;
-    light.current.position.set(playerPos.x + 35, 60, playerPos.z - 30);
+    light.current.position.set(
+      playerPos.x + SUN_DIR.x * 90,
+      SUN_DIR.y * 90,
+      playerPos.z + SUN_DIR.z * 90,
+    );
     target.position.set(playerPos.x, 0, playerPos.z);
     target.updateMatrixWorld();
   });
@@ -38,7 +47,8 @@ function Sun() {
       <directionalLight
         ref={light}
         target={target}
-        intensity={2.5}
+        color={SUN_COLOR}
+        intensity={2.9}
         castShadow
         shadow-mapSize={[2048, 2048]}
         shadow-camera-left={-70}
@@ -46,7 +56,7 @@ function Sun() {
         shadow-camera-top={70}
         shadow-camera-bottom={-70}
         shadow-camera-near={1}
-        shadow-camera-far={220}
+        shadow-camera-far={260}
         shadow-bias={-0.0005}
       />
     </>
@@ -153,28 +163,38 @@ export default function Game({
         gl={{
           antialias: true,
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.05,
+          toneMappingExposure: 1,
         }}
         dpr={[1, 1.5]}
         camera={{ fov: 55, near: 0.1, far: 800, position: [0, 6, 8] }}
       >
         <color attach="background" args={[SKY]} />
         <fog attach="fog" args={[SKY, FOG_NEAR, FOG_FAR]} />
-        <hemisphereLight args={["#c8dfe9", "#9b8767", 1.5]} />
+        <hemisphereLight args={["#bfd5e6", "#8d7a5a", 1.3]} />
         <Sun />
+        <SkyDome />
 
         <Sea fogNear={FOG_NEAR} fogFar={FOG_FAR} />
         <Dockyard />
         <Archipelago />
         <TravelGallery />
         <Activities />
+        <Flora />
+        <Animals />
+        <Dolphins />
+        <Birds />
+        {/* Before the player, so rides move it before it is drawn. */}
+        <Thrills />
         <Clouds />
         <MooredBoat />
         <Player />
+        {/* After the player, so it can blend from the follow camera. */}
+        <IntroCamera />
         <IslandEffects />
       </Canvas>
 
       <Hud />
+      <ThrillHud />
       <ActivityPanel />
       <GalleryReader publishedSlugs={publishedTravelSlugs} />
     </div>

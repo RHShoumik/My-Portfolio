@@ -1,7 +1,8 @@
 // SPIKE: throwaway prototype of the island game. Not production code.
 import * as THREE from "three";
 
-export const SKY = "#b9d0d5";
+/** Horizon haze: the fog, the sea's far colour and the bottom of the sky dome. */
+export const SKY = "#cfd5cb";
 export const DOCK_Y = 1;
 export const SAND_Y = 0.6;
 
