@@ -53,6 +53,47 @@ export const motion = { speed: 0, turn: 0, mode: "walk" as Mode };
 /** Where the speed boat is moored while the player is not in it. */
 export const boatPark = { x: 5.4, z: 20, heading: 0 };
 
+/**
+ * While a thrill ride (cannon, balloon, parachute, trampoline, zipline) is
+ * active it owns the player's position and pose; the player just follows.
+ * When it ends it hands the player back with `release`.
+ */
+export const ride = {
+  active: false,
+  x: 0,
+  y: 0,
+  z: 0,
+  heading: 0,
+  /** Body pitch and roll in radians (a flip, a superman dive...). */
+  pitch: 0,
+  roll: 0,
+  /** Camera distance behind and height above while riding. */
+  cam: [9, 4] as [number, number],
+  /** Swing the camera around the rider (radians), e.g. for a side view. */
+  camYaw: 0,
+  release: null as null | { x: number; z: number; heading: number; mode: Mode },
+};
+
+/**
+ * The opening camera flight over the archipelago. It plays once per visit
+ * (per browser session) and any key, click or tap skips it.
+ */
+export const INTRO_LENGTH = 11;
+export const useIntro = create<{
+  active: boolean;
+  start: () => void;
+  skip: () => void;
+}>((set) => ({
+  active: false,
+  start: () => set({ active: true }),
+  skip: () => {
+    try {
+      sessionStorage.setItem("island-intro-seen", "1");
+    } catch {}
+    set({ active: false });
+  },
+}));
+
 /** Orbit offsets shared by the canvas controls and reset button. */
 export const cameraOrbit = { yaw: 0, pitch: 0, zoom: 1 };
 export function resetCamera() {

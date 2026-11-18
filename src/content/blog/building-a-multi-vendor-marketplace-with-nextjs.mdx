@@ -1,0 +1,53 @@
+---
+title: "Building a Multi-Vendor Marketplace with Next.js 16 and MongoDB"
+description: "Ragib Hassan Shoumik, a software engineer in Dhaka, on building Hextech BD: a multi-vendor e-commerce marketplace with Next.js, vendor dashboards, four payment gateways and 17 languages."
+date: "2026-11-17"
+tags: ["nextjs", "mongodb", "ecommerce", "typescript", "i18n"]
+published: true
+---
+
+# Building a Multi-Vendor Marketplace with Next.js 16 and MongoDB
+
+I'm Ragib Hassan Shoumik, a software engineer in Dhaka, Bangladesh. Much of my career has been spent on marketplaces, so when I got to work on **Hextech BD** ([hextechbd.com](https://hextechbd.com)) I knew the shape of the problem. This post is about how a multi-vendor store is put together and the choices that mattered most.
+
+## One product, three audiences
+
+A marketplace is really three apps sharing one database:
+
+- **Shoppers** browse, search, filter, add to a cart, check out, track orders, keep a wishlist and request returns.
+- **Vendors** run their own shop: products, orders, payouts, settings and their own staff.
+- **Admins** run the platform: catalog, users, vendors, payments, analytics and notifications.
+
+In the Next.js App Router these became separate route groups, `(store)`, `vendor`, `admin` and `staff`, each with its own layout, so a vendor never loads admin code and the storefront stays light.
+
+## Permissions are the hard part
+
+Staff accounts exist at both the vendor level and the admin level, and a vendor's helper should not see another vendor's orders. Instead of scattering role checks through the UI, the app defines permissions in one config file and the API routes enforce them. The rule I follow: hiding a button is a courtesy, but the route handler must always refuse the request itself.
+
+## Payments: four gateways, one checkout
+
+Customers in different countries pay in different ways, so the checkout supports Stripe, PayPal, Paystack and Razorpay. Each gateway behaves differently, with different redirects and different webhooks. The trick is to put them all behind one small interface (create a payment, confirm it, handle the webhook), so the cart and order code doesn't care which one was used. Webhooks arrive late and sometimes twice, so order updates need to be safe to repeat.
+
+## 17 languages, including right-to-left
+
+The marketplace ships in 17 languages, among them Bengali, Arabic, Hindi, Chinese, Japanese and several African languages. Routes are prefixed with the locale (`/en/...`, `/ar/...`) using `next-intl`, and Arabic switches the whole layout to right-to-left. Keeping all text in translation files, never in components, is what made adding a language cheap. The lesson I'd pass on is about layout: use logical CSS (`ms-`, `ps-`, start and end instead of left and right) from day one. It's far easier than going back through hundreds of `ml-` and `pl-` classes to support right-to-left later.
+
+## Extras that earned their place
+
+- **Rich content:** a TipTap editor for blog and content pages.
+- **3D product media:** `.glb` and `.gltf` models shown with Google's `model-viewer`. It's the same instinct that made me build [my portfolio as a 3D game](/blog/building-a-3d-space-game-portfolio-with-threejs).
+- **Notifications:** transactional email, plus web push for installed PWAs.
+- **Live chat:** a unified inbox for customer messages.
+- **AI tools:** an assistant and content generation through OpenAI.
+
+Anything that costs money to run, like AI calls, payment fees or storage, is optional and only switches on when the owner adds their own keys.
+
+## The stack
+
+Next.js 16 and React 19 with TypeScript, MongoDB through Mongoose, Better Auth for sessions and two-factor login, Tailwind and Radix UI for the interface, Zustand and React Hook Form with Zod for state and forms, and Docker for deployment.
+
+## What I'd tell anyone starting one
+
+Decide the permission model before you build screens. Hide payment providers behind one interface. Put every string in a translation file on day one. And treat vendors as customers too: their dashboard deserves as much care as the storefront.
+
+I write about the things I build on [this blog](/blog) and list them on my [projects page](/#projects). If you're planning an online store, [say hello](/#contact).

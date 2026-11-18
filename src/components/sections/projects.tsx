@@ -1,10 +1,19 @@
-import { ArrowUpRight, Megaphone, ShoppingBag, ShoppingBasket, UtensilsCrossed } from "lucide-react";
+import {
+  ArrowUpRight,
+  FileText,
+  Megaphone,
+  ShoppingBag,
+  ShoppingBasket,
+  Store,
+  Tv,
+  UtensilsCrossed,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { projects } from "@/lib/constants";
 import { SectionHeader } from "@/components/section-header";
 
 // One icon per project, in a tile tinted with the site accent.
-const icons: LucideIcon[] = [ShoppingBasket, UtensilsCrossed, ShoppingBag, Megaphone];
+const icons: LucideIcon[] = [ShoppingBasket, UtensilsCrossed, ShoppingBag, Megaphone, Tv, Store, FileText];
 
 export function ProjectsSection() {
   return (
